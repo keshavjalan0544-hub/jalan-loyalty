@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login — Jalan Loyalty{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+
+<div class="hero-section d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+
+  <div class="login-card glass-card fade-up" style="max-width: 380px; width: 100%; padding: 2rem;">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <div class="hero-logo" style="font-size: 1.8rem;">🔐</div>
+      <h2 class="brand mb-1" style="font-size: 1.2rem;">Admin Access</h2>
+      <p class="tagline mb-0">Jalan Timber & Sales</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Form -->
+    <form method="POST">
+
+      <div class="mb-4">
+        <label for="pin" class="form-label">Admin PIN</label>
+        <input
+          type="password"
+          class="form-control-glass"
+          id="pin"
+          name="pin"
+          placeholder="Enter PIN"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <button type="submit" class="btn-gold w-100">
+        🔓 Login to Admin
+      </button>
+
+    </form>
+
+    <!-- Back link -->
+    <div class="text-center mt-4">
+      <a href="{{ url_for('index') }}" class="nav-pill" style="font-size: 0.8rem;">
+        ← Customer Login
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

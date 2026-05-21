@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Panel — Jalan Loyalty
+{% endblock %}
+
+{% block nav_actions %}
+
+<span class="nav-pill"
+      style="
+        color:var(--gold-1);
+        border-color:rgba(246,201,14,0.35)
+      ">
+
+  🛡️ Admin
+
+</span>
+
+<a href="{{ url_for('download') }}"
+   class="nav-pill">
+
+   ⬇️ CSV
+
+</a>
+
+<a href="{{ url_for('admin_logout') }}"
+   class="nav-pill danger">
+
+   ← Logout
+
+</a>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-container">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 fade-up">
+
+    <div>
+
+      <span class="welcome-badge">
+        🪵 Jalan Timber & Sales
+      </span>
+
+      <h2 class="brand mt-2"
+          style="
+            font-size:1.6rem;
+            margin-top:8px;
+          ">
+
+        Admin Dashboard
+
+      </h2>
+
+      <p style="
+        color:var(--text-muted);
+        font-size:0.85rem;
+        margin-top:4px;
+      ">
+
+        Manage customers, rewards & approvals
+
+      </p>
+
+    </div>
+
+    <!-- QR -->
+    <div class="glass-card p-3 text-center">
+
+      <div class="qr-frame mx-auto">
+
+        <img src="{{ url_for('static', filename='img/shop_qr.png') }}"
+             alt="Shop QR"
+             style="
+              width:180px;
+              border-radius:12px;
+             ">
+
+      </div>
+
+      <p style="
+        font-size:0.75rem;
+        color:var(--text-muted);
+        margin-top:10px;
+      ">
+
+        Customer Scan QR
+
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- STATS -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-6 col-md-4">
+
+      <div class="glass-card stat-card gold fade-up">
+
+        <div style="font-size:1.6rem">👥</div>
+
+        <div class="stat-number">
+          {{ stats.total or 0 }}
+        </div>
+
+        <div class="stat-label">
+          Total Members
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-6 col-md-4">
+
+      <div class="glass-card stat-card red fade-up">
+
+        <div style="font-size:1.6rem">⏳</div>
+
+        <div class="stat-number">
+          {{ stats.pending or 0 }}
+        </div>
+
+        <div class="stat-label">
+          Pending Visits
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-6 col-md-4">
+
+      <div class="glass-card stat-card green fade-up">
+
+        <div style="font-size:1.6rem">⭐</div>
+
+        <div class="stat-number">
+          {{ stats.total_visits or 0 }}
+        </div>
+
+        <div class="stat-label">
+          Total Visits
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="glass-card fade-up"
+       style="overflow:hidden">
+
+    <!-- HEADER -->
+    <div style="
+      padding:1rem 1.2rem;
+      border-bottom:1px solid var(--glass-bd);
+      background:rgba(255,255,255,0.03);
+    ">
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+        <div>
+
+          <h3 style="
+            font-size:1rem;
+            margin:0;
+            color:var(--text-main);
+          ">
+
+            Customer Records
+
+          </h3>
+
+          <p style="
+            color:var(--text-muted);
+            font-size:0.75rem;
+            margin-top:4px;
+          ">
+
+            Showing {{ customers|length }} customer{% if customers|length != 1 %}s{% endif %}
+
+          </p>
+
+        </div>
+
+        <span class="badge-pill badge-visits">
+
+          📊 Live Database
+
+        </span>
+
+      </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div style="overflow-x:auto">
+
+      <table class="admin-table">
+
+        <thead>
+
+          <tr>
+
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Visits</th>
+            <th>Reward</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Action</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {% for c in customers %}
+
+          <tr>
+
+            <!-- ID -->
+            <td>
+
+              <span style="
+                color:var(--text-muted);
+                font-size:0.8rem;
+              ">
+
+                #{{ c.id }}
+
+              </span>
+
+            </td>
+
+            <!-- NAME -->
+            <td>
+
+              <div class="d-flex align-items-center gap-2">
+
+                <div style="
+                  width:36px;
+                  height:36px;
+                  border-radius:50%;
+                  background:rgba(246,201,14,0.12);
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  font-weight:700;
+                  color:var(--gold-1);
+                ">
+
+                  {{ c.name[0] }}
+
+                </div>
+
+                <div>
+
+                  <div style="
+                    font-weight:600;
+                    color:var(--text-main);
+                  ">
+
+                    {{ c.name }}
+
+                  </div>
+
+                  <div style="
+                    color:var(--text-muted);
+                    font-size:0.72rem;
+                  ">
+
+                    Loyalty Member
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </td>
+
+            <!-- PHONE -->
+            <td>
+
+              <span style="
+                color:var(--text-muted);
+                font-size:0.84rem;
+              ">
+
+                {{ c.phone }}
+
+              </span>
+
+            </td>
+
+            <!-- VISITS -->
+            <td>
+
+              <span class="badge-pill badge-visits">
+
+                ⭐ {{ c.visits }} Visits
+
+              </span>
+
+            </td>
+
+            <!-- REWARD -->
+            <td>
+
+              {% set r = compute_reward(c.visits) %}
+
+              {% if r %}
+
+              <span class="badge-pill badge-reward">
+
+                🎁 {{ r }}
+
+              </span>
+
+              {% else %}
+
+              <span style="
+                color:var(--text-muted);
+                font-size:0.8rem;
+              ">
+
+                No Reward
+
+              </span>
+
+              {% endif %}
+
+            </td>
+
+            <!-- STATUS -->
+            <td>
+
+              {% if c.pending_visit %}
+
+              <span class="badge-pill badge-pending">
+
+                ⏳ Pending
+
+              </span>
+
+              {% else %}
+
+              <span style="
+                color:var(--success);
+                font-size:0.8rem;
+                font-weight:600;
+              ">
+
+                ✓ Active
+
+              </span>
+
+              {% endif %}
+
+            </td>
+
+            <!-- JOINED -->
+            <td>
+
+              <span style="
+                color:var(--text-muted);
+                font-size:0.78rem;
+              ">
+
+                {{ c.created_at[:10] }}
+
+              </span>
+
+            </td>
+
+            <!-- ACTION -->
+            <td>
+
+              {% if c.pending_visit %}
+
+              <a href="{{ url_for('approve', cid=c.id) }}"
+                 class="btn-glass btn-success-glass"
+                 style="
+                  padding:5px 10px;
+                  font-size:0.72rem;
+                 ">
+
+                 ✅ Approve
+
+              </a>
+
+              {% else %}
+
+              <span style="
+                color:var(--text-muted);
+                font-size:0.75rem;
+              ">
+
+                No Action
+
+              </span>
+
+              {% endif %}
+
+            </td>
+
+          </tr>
+
+          {% else %}
+
+          <tr>
+
+            <td colspan="8"
+                class="text-center"
+                style="
+                  padding:3rem;
+                  color:var(--text-muted);
+                ">
+
+              No customers yet.
+
+            </td>
+
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

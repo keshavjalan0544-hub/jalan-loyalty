@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}
+Jalan Timber & Sales Loyalty
+{% endblock %}
+
+{% block nav_actions %}
+
+<a href="{{ url_for('admin_login') }}"
+   class="nav-pill">
+
+   🔐 Admin
+
+</a>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="hero-section">
+
+    <div class="hero-content fade-up">
+
+        <!-- Logo -->
+        <div class="hero-logo">
+            🪵
+        </div>
+
+        <!-- Title -->
+        <h1 class="hero-title">
+            Jalan Timber & Sales
+        </h1>
+
+        <p class="hero-subtitle">
+            Premium Loyalty Reward Program
+        </p>
+
+        <!-- Login Card -->
+        <div class="glass-card login-card mt-4">
+
+            <h3 class="mb-3"
+                style="
+                    color:var(--gold-1);
+                    font-weight:700;
+                ">
+
+                Customer Login
+
+            </h3>
+
+            <form method="POST"
+                  action="{{ url_for('login') }}">
+
+                <!-- Name -->
+                <div class="mb-3">
+
+                    <input type="text"
+                           name="name"
+                           class="form-control-glass"
+                           placeholder="👤 Enter Your Name"
+                           required>
+
+                </div>
+
+                <!-- Phone -->
+                <div class="mb-3">
+
+                    <input type="tel"
+                           name="phone"
+                           class="form-control-glass"
+                           placeholder="📱 Mobile Number"
+                           maxlength="10"
+                           required>
+
+                </div>
+
+                <!-- Submit -->
+                <button type="submit"
+                        class="btn-gold w-100">
+
+                    🚀 Login / Register
+
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- Features -->
+        <div class="features-grid mt-4">
+
+            <div class="feature-card glass-card">
+
+                <div class="feature-icon">
+                    ⭐
+                </div>
+
+                <h4>Earn Visits</h4>
+
+                <p>
+                    Scan QR after each purchase
+                </p>
+
+            </div>
+
+            <div class="feature-card glass-card">
+
+                <div class="feature-icon">
+                    🎁
+                </div>
+
+                <h4>Unlock Rewards</h4>
+
+                <p>
+                    Get gifts on milestone visits
+                </p>
+
+            </div>
+
+            <div class="feature-card glass-card">
+
+                <div class="feature-icon">
+                    🏆
+                </div>
+
+                <h4>Premium Loyalty</h4>
+
+                <p>
+                    Exclusive rewards for customers
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
