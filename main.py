@@ -30,14 +30,14 @@ app = Flask(__name__)
 
 app.secret_key = os.environ.get(
     "SECRET_KEY",
-    "jalan_secret_key"
+    "jalan-secret-key"
 )
 
 DATABASE = "loyalty.db"
 
 ADMIN_PIN = os.environ.get(
     "ADMIN_PIN",
-    "jalan2025"
+    "jalan2024"
 )
 
 # ---------------------------------------------------
@@ -121,14 +121,21 @@ def init_db():
 
         db.commit()
 
+
+# IMPORTANT FOR RENDER
+with app.app_context():
+    init_db()
+
 # ---------------------------------------------------
 # QR Generator
 # ---------------------------------------------------
 
 def generate_qr():
 
-    # Your Render Live URL
-    host = "https://jalan-loyalty.onrender.com"
+    host = os.environ.get(
+        "APP_HOST",
+        "http://127.0.0.1:5000"
+    )
 
     url = f"{host}/scan"
 
@@ -329,7 +336,6 @@ def dashboard():
 
         remaining = 0
 
-    # Stars
     max_stars = 15
 
     star_filled = min(visits, max_stars)
@@ -373,7 +379,7 @@ def scan():
             (cid,)
         ).fetchone()
 
-        # Prevent duplicate scans
+        # Prevent multiple scans same day
         if customer["last_scan"] == today:
 
             flash(
@@ -383,7 +389,7 @@ def scan():
 
             return redirect(url_for("dashboard"))
 
-        # Pending already
+        # Already pending
         if customer["pending_visit"] == 1:
 
             flash(
@@ -393,7 +399,7 @@ def scan():
 
             return redirect(url_for("dashboard"))
 
-        # Add pending request
+        # Create pending request
         db.execute("""
             UPDATE customers
             SET pending_visit = 1,
@@ -432,6 +438,8 @@ def admin_login():
 
             session["is_admin"] = True
 
+            flash("Admin login successful.", "success")
+
             return redirect(url_for("admin"))
 
         flash("Invalid PIN.", "danger")
@@ -466,7 +474,8 @@ def admin():
         if search:
 
             customers = db.execute("""
-                SELECT * FROM customers
+                SELECT *
+                FROM customers
                 WHERE name LIKE ?
                 OR phone LIKE ?
                 ORDER BY id DESC
@@ -478,21 +487,35 @@ def admin():
         else:
 
             customers = db.execute("""
-                SELECT * FROM customers
+                SELECT *
+                FROM customers
                 ORDER BY id DESC
             """).fetchall()
 
         stats = db.execute("""
             SELECT
                 COUNT(*) as total,
-                SUM(visits) as total_visits,
-                SUM(pending_visit) as pending
+                SUM(pending_visit) as pending,
+                SUM(
+                    CASE
+                        WHEN visits >= 10
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as tiffin,
+                SUM(
+                    CASE
+                        WHEN visits >= 15
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as thali
             FROM customers
         """).fetchone()
 
-        qr_exists = os.path.exists(
-            "static/img/shop_qr.png"
-        )
+    qr_exists = os.path.exists(
+        "static/img/shop_qr.png"
+    )
 
     return render_template(
         "admin.html",
@@ -501,9 +524,9 @@ def admin():
 
         stats=stats,
 
-        qr_exists=qr_exists,
-
         search=search,
+
+        qr_exists=qr_exists,
 
         compute_reward=compute_reward
     )
@@ -582,7 +605,7 @@ def reject(cid):
 
         db.commit()
 
-    flash("Visit rejected.", "warning")
+    flash("Visit rejected.", "info")
 
     return redirect(url_for("admin"))
 
@@ -606,7 +629,7 @@ def reset(cid):
 
         db.commit()
 
-    flash("Customer reset successful.", "info")
+    flash("Customer reset successful.", "success")
 
     return redirect(url_for("admin"))
 
@@ -618,9 +641,17 @@ def reset(cid):
 @admin_required
 def adjust(cid):
 
-    delta = int(
-        request.form.get("delta", 0)
-    )
+    delta = request.form.get("delta", "0")
+
+    try:
+
+        delta = int(delta)
+
+    except:
+
+        flash("Invalid number.", "danger")
+
+        return redirect(url_for("admin"))
 
     with get_db() as db:
 
@@ -629,27 +660,22 @@ def adjust(cid):
             (cid,)
         ).fetchone()
 
-        if customer:
+        visits = max(0, customer["visits"] + delta)
 
-            visits = max(
-                0,
-                customer["visits"] + delta
-            )
+        reward = compute_reward(visits)
 
-            reward = compute_reward(visits)
+        db.execute("""
+            UPDATE customers
+            SET visits = ?,
+                reward = ?
+            WHERE id = ?
+        """, (
+            visits,
+            reward,
+            cid
+        ))
 
-            db.execute("""
-                UPDATE customers
-                SET visits = ?,
-                    reward = ?
-                WHERE id = ?
-            """, (
-                visits,
-                reward,
-                cid
-            ))
-
-            db.commit()
+        db.commit()
 
     flash("Visits updated.", "success")
 
@@ -665,12 +691,13 @@ def approve_all():
 
     with get_db() as db:
 
-        pending_customers = db.execute("""
-            SELECT * FROM customers
+        customers = db.execute("""
+            SELECT *
+            FROM customers
             WHERE pending_visit = 1
         """).fetchall()
 
-        for customer in pending_customers:
+        for customer in customers:
 
             visits = customer["visits"] + 1
 
@@ -690,9 +717,59 @@ def approve_all():
 
         db.commit()
 
-    flash("All pending visits approved.", "success")
+    flash("All visits approved.", "success")
 
     return redirect(url_for("admin"))
+
+# ---------------------------------------------------
+# Download CSV
+# ---------------------------------------------------
+
+@app.route("/download")
+@admin_required
+def download():
+
+    output = io.StringIO()
+
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "ID",
+        "Name",
+        "Phone",
+        "Visits",
+        "Reward"
+    ])
+
+    with get_db() as db:
+
+        customers = db.execute("""
+            SELECT *
+            FROM customers
+        """).fetchall()
+
+        for c in customers:
+
+            writer.writerow([
+                c["id"],
+                c["name"],
+                c["phone"],
+                c["visits"],
+                c["reward"]
+            ])
+
+    mem = io.BytesIO()
+
+    mem.write(output.getvalue().encode("utf-8"))
+
+    mem.seek(0)
+
+    return send_file(
+        mem,
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="customers.csv"
+    )
 
 # ---------------------------------------------------
 # Claim Reward
@@ -711,9 +788,7 @@ def claim_reward():
             (cid,)
         ).fetchone()
 
-        reward = compute_reward(
-            customer["visits"]
-        )
+        reward = compute_reward(customer["visits"])
 
         if not reward:
 
@@ -744,67 +819,15 @@ def claim_reward():
     return redirect(url_for("dashboard"))
 
 # ---------------------------------------------------
-# Download CSV
-# ---------------------------------------------------
-
-@app.route("/download")
-@admin_required
-def download():
-
-    with get_db() as db:
-
-        customers = db.execute("""
-            SELECT * FROM customers
-            ORDER BY id DESC
-        """).fetchall()
-
-    output = io.StringIO()
-
-    writer = csv.writer(output)
-
-    writer.writerow([
-        "ID",
-        "Name",
-        "Phone",
-        "Visits",
-        "Reward",
-        "Joined"
-    ])
-
-    for c in customers:
-
-        writer.writerow([
-            c["id"],
-            c["name"],
-            c["phone"],
-            c["visits"],
-            c["reward"],
-            c["created_at"]
-        ])
-
-    output.seek(0)
-
-    return send_file(
-        io.BytesIO(output.getvalue().encode()),
-        mimetype="text/csv",
-        as_attachment=True,
-        download_name="customers.csv"
-    )
-
-# ---------------------------------------------------
 # Main
 # ---------------------------------------------------
 
 if __name__ == "__main__":
 
-    init_db()
-
     generate_qr()
-
-    print("🚀 Jalan Loyalty Running...")
 
     app.run(
         host="0.0.0.0",
-        port=int(os.environ.get("PORT", 5000)),
-        debug=False
+        port=5000,
+        debug=True
     )
