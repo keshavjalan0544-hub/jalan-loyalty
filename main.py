@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-import sqlite3
-import qrcode
 import csv
 import io
+import sqlite3
+import qrcode
 
 from datetime import datetime
 from functools import wraps
@@ -19,7 +19,7 @@ from flask import (
     url_for,
     session,
     flash,
-    Response
+    send_file
 )
 
 # ---------------------------------------------------
@@ -41,7 +41,7 @@ ADMIN_PIN = os.environ.get(
 )
 
 # ---------------------------------------------------
-# Rewards Configuration
+# Rewards
 # ---------------------------------------------------
 
 REWARDS = [
@@ -51,7 +51,7 @@ REWARDS = [
 ]
 
 # ---------------------------------------------------
-# Database Connection
+# Database
 # ---------------------------------------------------
 
 def get_db():
@@ -62,9 +62,6 @@ def get_db():
 
     return conn
 
-# ---------------------------------------------------
-# Database Initialization
-# ---------------------------------------------------
 
 def init_db():
 
@@ -130,17 +127,12 @@ def init_db():
 
 def generate_qr():
 
-    host = os.environ.get(
-        "APP_HOST",
-        "http://127.0.0.1:5000"
-    )
+    # Your Render Live URL
+    host = "https://jalan-loyalty.onrender.com"
 
     url = f"{host}/scan"
 
-    os.makedirs(
-        "static/img",
-        exist_ok=True
-    )
+    os.makedirs("static/img", exist_ok=True)
 
     img = qrcode.make(url)
 
@@ -177,7 +169,7 @@ def next_reward(visits):
     return None, None
 
 # ---------------------------------------------------
-# Authentication Decorators
+# Decorators
 # ---------------------------------------------------
 
 def login_required(f):
@@ -187,14 +179,9 @@ def login_required(f):
 
         if "customer_id" not in session:
 
-            flash(
-                "Please login first.",
-                "danger"
-            )
+            flash("Please login first.", "danger")
 
-            return redirect(
-                url_for("index")
-            )
+            return redirect(url_for("index"))
 
         return f(*args, **kwargs)
 
@@ -208,130 +195,86 @@ def admin_required(f):
 
         if not session.get("is_admin"):
 
-            flash(
-                "Admin login required.",
-                "danger"
-            )
+            flash("Admin login required.", "danger")
 
-            return redirect(
-                url_for("admin_login")
-            )
+            return redirect(url_for("admin_login"))
 
         return f(*args, **kwargs)
 
     return wrapper
 
 # ---------------------------------------------------
-# Home Page
+# Home
 # ---------------------------------------------------
 
 @app.route("/")
 def index():
 
-    return render_template(
-        "index.html"
-    )
+    return render_template("index.html")
 
 # ---------------------------------------------------
-# Customer Login
+# Login
 # ---------------------------------------------------
 
 @app.route("/login", methods=["POST"])
 def login():
 
-    name = request.form.get(
-        "name",
-        ""
-    ).strip()
+    name = request.form.get("name", "").strip()
 
-    phone = request.form.get(
-        "phone",
-        ""
-    ).strip()
+    phone = request.form.get("phone", "").strip()
 
     if not name or not phone:
 
-        flash(
-            "Name and phone required.",
-            "danger"
-        )
+        flash("Name and phone required.", "danger")
 
-        return redirect(
-            url_for("index")
-        )
+        return redirect(url_for("index"))
 
     if not phone.isdigit() or len(phone) != 10:
 
-        flash(
-            "Enter valid mobile number.",
-            "danger"
-        )
+        flash("Enter valid mobile number.", "danger")
 
-        return redirect(
-            url_for("index")
-        )
+        return redirect(url_for("index"))
 
     with get_db() as db:
 
         customer = db.execute(
-            """
-            SELECT * FROM customers
-            WHERE phone = ?
-            """,
+            "SELECT * FROM customers WHERE phone = ?",
             (phone,)
         ).fetchone()
 
-        # Existing customer
         if customer:
 
             if customer["name"].lower() != name.lower():
 
-                flash(
-                    "Wrong name for this number.",
-                    "danger"
-                )
+                flash("Wrong name for this number.", "danger")
 
-                return redirect(
-                    url_for("index")
-                )
+                return redirect(url_for("index"))
 
-        # New customer
         else:
 
             db.execute("""
                 INSERT INTO customers
                 (name, phone)
                 VALUES (?, ?)
-            """, (
-                name,
-                phone
-            ))
+            """, (name, phone))
 
             db.commit()
 
             customer = db.execute(
-                """
-                SELECT * FROM customers
-                WHERE phone = ?
-                """,
+                "SELECT * FROM customers WHERE phone = ?",
                 (phone,)
             ).fetchone()
 
-            flash(
-                f"Welcome {name}! 🎉",
-                "success"
-            )
+            flash(f"Welcome {name}! 🎉", "success")
 
     session["customer_id"] = customer["id"]
 
     session["customer_name"] = customer["name"]
 
-    return redirect(
-        url_for("dashboard")
-    )
+    return redirect(url_for("dashboard"))
 
 # ---------------------------------------------------
-# Customer Logout
+# Logout
 # ---------------------------------------------------
 
 @app.route("/logout")
@@ -339,17 +282,12 @@ def logout():
 
     session.clear()
 
-    flash(
-        "Logged out successfully.",
-        "info"
-    )
+    flash("Logged out successfully.", "info")
 
-    return redirect(
-        url_for("index")
-    )
+    return redirect(url_for("index"))
 
 # ---------------------------------------------------
-# Customer Dashboard
+# Dashboard
 # ---------------------------------------------------
 
 @app.route("/dashboard")
@@ -359,10 +297,7 @@ def dashboard():
     with get_db() as db:
 
         customer = db.execute(
-            """
-            SELECT * FROM customers
-            WHERE id = ?
-            """,
+            "SELECT * FROM customers WHERE id = ?",
             (session["customer_id"],)
         ).fetchone()
 
@@ -370,14 +305,9 @@ def dashboard():
 
         session.clear()
 
-        flash(
-            "Customer not found.",
-            "danger"
-        )
+        flash("Customer not found.", "danger")
 
-        return redirect(
-            url_for("index")
-        )
+        return redirect(url_for("index"))
 
     visits = customer["visits"]
 
@@ -399,13 +329,10 @@ def dashboard():
 
         remaining = 0
 
-    # ⭐ Stars Logic
+    # Stars
     max_stars = 15
 
-    star_filled = min(
-        visits,
-        max_stars
-    )
+    star_filled = min(visits, max_stars)
 
     return render_template(
         "dashboard.html",
@@ -428,7 +355,7 @@ def dashboard():
     )
 
 # ---------------------------------------------------
-# QR Scan
+# Scan QR
 # ---------------------------------------------------
 
 @app.route("/scan")
@@ -437,21 +364,16 @@ def scan():
 
     cid = session["customer_id"]
 
-    today = datetime.now().strftime(
-        "%Y-%m-%d"
-    )
+    today = datetime.now().strftime("%Y-%m-%d")
 
     with get_db() as db:
 
         customer = db.execute(
-            """
-            SELECT * FROM customers
-            WHERE id = ?
-            """,
+            "SELECT * FROM customers WHERE id = ?",
             (cid,)
         ).fetchone()
 
-        # Already scanned today
+        # Prevent duplicate scans
         if customer["last_scan"] == today:
 
             flash(
@@ -459,11 +381,9 @@ def scan():
                 "warning"
             )
 
-            return redirect(
-                url_for("dashboard")
-            )
+            return redirect(url_for("dashboard"))
 
-        # Pending approval exists
+        # Pending already
         if customer["pending_visit"] == 1:
 
             flash(
@@ -471,30 +391,22 @@ def scan():
                 "warning"
             )
 
-            return redirect(
-                url_for("dashboard")
-            )
+            return redirect(url_for("dashboard"))
 
-        # Update customer
+        # Add pending request
         db.execute("""
             UPDATE customers
             SET pending_visit = 1,
                 last_scan = ?
             WHERE id = ?
-        """, (
-            today,
-            cid
-        ))
+        """, (today, cid))
 
-        # Add visit log
+        # Log visit
         db.execute("""
             INSERT INTO visit_logs
             (customer_id, visit_date, approved)
             VALUES (?, ?, 0)
-        """, (
-            cid,
-            today
-        ))
+        """, (cid, today))
 
         db.commit()
 
@@ -503,9 +415,7 @@ def scan():
         "success"
     )
 
-    return redirect(
-        url_for("dashboard")
-    )
+    return redirect(url_for("dashboard"))
 
 # ---------------------------------------------------
 # Admin Login
@@ -522,23 +432,11 @@ def admin_login():
 
             session["is_admin"] = True
 
-            flash(
-                "Admin login successful.",
-                "success"
-            )
+            return redirect(url_for("admin"))
 
-            return redirect(
-                url_for("admin")
-            )
+        flash("Invalid PIN.", "danger")
 
-        flash(
-            "Invalid PIN.",
-            "danger"
-        )
-
-    return render_template(
-        "admin_login.html"
-    )
+    return render_template("admin_login.html")
 
 # ---------------------------------------------------
 # Admin Logout
@@ -547,19 +445,11 @@ def admin_login():
 @app.route("/admin/logout")
 def admin_logout():
 
-    session.pop(
-        "is_admin",
-        None
-    )
+    session.pop("is_admin", None)
 
-    flash(
-        "Admin logged out.",
-        "info"
-    )
+    flash("Admin logged out.", "info")
 
-    return redirect(
-        url_for("admin_login")
-    )
+    return redirect(url_for("admin_login"))
 
 # ---------------------------------------------------
 # Admin Dashboard
@@ -569,13 +459,28 @@ def admin_logout():
 @admin_required
 def admin():
 
+    search = request.args.get("q", "").strip()
+
     with get_db() as db:
 
-        customers = db.execute("""
-            SELECT *
-            FROM customers
-            ORDER BY id DESC
-        """).fetchall()
+        if search:
+
+            customers = db.execute("""
+                SELECT * FROM customers
+                WHERE name LIKE ?
+                OR phone LIKE ?
+                ORDER BY id DESC
+            """, (
+                f"%{search}%",
+                f"%{search}%"
+            )).fetchall()
+
+        else:
+
+            customers = db.execute("""
+                SELECT * FROM customers
+                ORDER BY id DESC
+            """).fetchall()
 
         stats = db.execute("""
             SELECT
@@ -585,18 +490,9 @@ def admin():
             FROM customers
         """).fetchone()
 
-        daily_visits = db.execute("""
-            SELECT COUNT(*) as count
-            FROM visit_logs
-            WHERE visit_date = date('now')
-        """).fetchone()
-
-        top_customers = db.execute("""
-            SELECT name, visits
-            FROM customers
-            ORDER BY visits DESC
-            LIMIT 5
-        """).fetchall()
+        qr_exists = os.path.exists(
+            "static/img/shop_qr.png"
+        )
 
     return render_template(
         "admin.html",
@@ -605,9 +501,9 @@ def admin():
 
         stats=stats,
 
-        daily_visits=daily_visits,
+        qr_exists=qr_exists,
 
-        top_customers=top_customers,
+        search=search,
 
         compute_reward=compute_reward
     )
@@ -623,34 +519,21 @@ def approve(cid):
     with get_db() as db:
 
         customer = db.execute(
-            """
-            SELECT * FROM customers
-            WHERE id = ?
-            """,
+            "SELECT * FROM customers WHERE id = ?",
             (cid,)
         ).fetchone()
 
         if not customer:
 
-            flash(
-                "Customer not found.",
-                "danger"
-            )
+            flash("Customer not found.", "danger")
 
-            return redirect(
-                url_for("admin")
-            )
+            return redirect(url_for("admin"))
 
         if customer["pending_visit"] != 1:
 
-            flash(
-                "No pending visit.",
-                "warning"
-            )
+            flash("No pending visit.", "warning")
 
-            return redirect(
-                url_for("admin")
-            )
+            return redirect(url_for("admin"))
 
         visits = customer["visits"] + 1
 
@@ -677,14 +560,139 @@ def approve(cid):
 
         db.commit()
 
-    flash(
-        "Visit approved ✅",
-        "success"
+    flash("Visit approved ✅", "success")
+
+    return redirect(url_for("admin"))
+
+# ---------------------------------------------------
+# Reject Visit
+# ---------------------------------------------------
+
+@app.route("/reject/<int:cid>")
+@admin_required
+def reject(cid):
+
+    with get_db() as db:
+
+        db.execute("""
+            UPDATE customers
+            SET pending_visit = 0
+            WHERE id = ?
+        """, (cid,))
+
+        db.commit()
+
+    flash("Visit rejected.", "warning")
+
+    return redirect(url_for("admin"))
+
+# ---------------------------------------------------
+# Reset Customer
+# ---------------------------------------------------
+
+@app.route("/reset/<int:cid>")
+@admin_required
+def reset(cid):
+
+    with get_db() as db:
+
+        db.execute("""
+            UPDATE customers
+            SET visits = 0,
+                reward = '',
+                pending_visit = 0
+            WHERE id = ?
+        """, (cid,))
+
+        db.commit()
+
+    flash("Customer reset successful.", "info")
+
+    return redirect(url_for("admin"))
+
+# ---------------------------------------------------
+# Adjust Visits
+# ---------------------------------------------------
+
+@app.route("/adjust/<int:cid>", methods=["POST"])
+@admin_required
+def adjust(cid):
+
+    delta = int(
+        request.form.get("delta", 0)
     )
 
-    return redirect(
-        url_for("admin")
-    )
+    with get_db() as db:
+
+        customer = db.execute(
+            "SELECT * FROM customers WHERE id = ?",
+            (cid,)
+        ).fetchone()
+
+        if customer:
+
+            visits = max(
+                0,
+                customer["visits"] + delta
+            )
+
+            reward = compute_reward(visits)
+
+            db.execute("""
+                UPDATE customers
+                SET visits = ?,
+                    reward = ?
+                WHERE id = ?
+            """, (
+                visits,
+                reward,
+                cid
+            ))
+
+            db.commit()
+
+    flash("Visits updated.", "success")
+
+    return redirect(url_for("admin"))
+
+# ---------------------------------------------------
+# Approve All
+# ---------------------------------------------------
+
+@app.route("/approve_all")
+@admin_required
+def approve_all():
+
+    with get_db() as db:
+
+        pending_customers = db.execute("""
+            SELECT * FROM customers
+            WHERE pending_visit = 1
+        """).fetchall()
+
+        for customer in pending_customers:
+
+            visits = customer["visits"] + 1
+
+            reward = compute_reward(visits)
+
+            db.execute("""
+                UPDATE customers
+                SET visits = ?,
+                    reward = ?,
+                    pending_visit = 0
+                WHERE id = ?
+            """, (
+                visits,
+                reward,
+                customer["id"]
+            ))
+
+        db.commit()
+
+    flash("All pending visits approved.", "success")
+
+    return redirect(url_for("admin"))
 
 # ---------------------------------------------------
 # Claim Reward
@@ -699,10 +707,7 @@ def claim_reward():
     with get_db() as db:
 
         customer = db.execute(
-            """
-            SELECT * FROM customers
-            WHERE id = ?
-            """,
+            "SELECT * FROM customers WHERE id = ?",
             (cid,)
         ).fetchone()
 
@@ -712,23 +717,15 @@ def claim_reward():
 
         if not reward:
 
-            flash(
-                "No reward available.",
-                "warning"
-            )
+            flash("No reward available.", "warning")
 
-            return redirect(
-                url_for("dashboard")
-            )
+            return redirect(url_for("dashboard"))
 
         db.execute("""
             INSERT INTO reward_claims
             (customer_id, reward)
             VALUES (?, ?)
-        """, (
-            cid,
-            reward
-        ))
+        """, (cid, reward))
 
         db.execute("""
             UPDATE customers
@@ -744,17 +741,22 @@ def claim_reward():
         "success"
     )
 
-    return redirect(
-        url_for("dashboard")
-    )
+    return redirect(url_for("dashboard"))
 
 # ---------------------------------------------------
-# Download Customer CSV
+# Download CSV
 # ---------------------------------------------------
 
 @app.route("/download")
 @admin_required
 def download():
+
+    with get_db() as db:
+
+        customers = db.execute("""
+            SELECT * FROM customers
+            ORDER BY id DESC
+        """).fetchall()
 
     output = io.StringIO()
 
@@ -765,35 +767,28 @@ def download():
         "Name",
         "Phone",
         "Visits",
-        "Reward"
+        "Reward",
+        "Joined"
     ])
 
-    with get_db() as db:
+    for c in customers:
 
-        customers = db.execute("""
-            SELECT *
-            FROM customers
-        """).fetchall()
-
-        for c in customers:
-
-            writer.writerow([
-                c["id"],
-                c["name"],
-                c["phone"],
-                c["visits"],
-                c["reward"]
-            ])
+        writer.writerow([
+            c["id"],
+            c["name"],
+            c["phone"],
+            c["visits"],
+            c["reward"],
+            c["created_at"]
+        ])
 
     output.seek(0)
 
-    return Response(
-        output,
+    return send_file(
+        io.BytesIO(output.getvalue().encode()),
         mimetype="text/csv",
-        headers={
-            "Content-Disposition":
-            "attachment; filename=customers.csv"
-        }
+        as_attachment=True,
+        download_name="customers.csv"
     )
 
 # ---------------------------------------------------
@@ -810,6 +805,6 @@ if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=5000,
-        debug=True
+        port=int(os.environ.get("PORT", 5000)),
+        debug=False
     )
