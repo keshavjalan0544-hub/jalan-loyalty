@@ -1,4 +1,4 @@
-# 🪵 Jalan Timber & Sales — QR Loyalty Reward System
+# 🪵 Jalan Sales — QR Loyalty Reward System
 
 A complete, production-ready loyalty rewards web application built with Flask + SQLite.
 
@@ -257,5 +257,5 @@ REWARDS = {
 
 ## 📞 Support
 
-Built for **Jalan Timber & Sales**.
+Built for **Jalan Sales**.
 For modifications, contact your developer.

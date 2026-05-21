@@ -1,5 +1,5 @@
 /**
- * Jalan Timber & Sales — FINAL PREMIUM JS
+ * Jalan Sales — FINAL PREMIUM JS
  * Ultra Smooth UI Interactions
  */
 
