@@ -220,7 +220,7 @@ Render's free tier spins down after inactivity. Use **Render Cron** or a free up
 ## 🛠️ Customization Guide
 
 ### Change business name
-Search for `Jalan Timber` in all templates and replace.
+Search for `Jalan Sales` in all templates and replace.
 
 ### Change colors/theme
 Edit CSS variables in `static/css/style.css`:
