@@ -395,6 +395,25 @@ def dashboard():
 
         star_filled=star_filled
     )
+# ---------------------------------------------------
+# Public QR Route
+# ---------------------------------------------------
+
+@app.route("/qr-scan")
+def qr_scan():
+
+    # User not logged in
+    if "customer_id" not in session:
+
+        flash(
+            "Please login before scanning QR.",
+            "warning"
+        )
+
+        return redirect(url_for("index"))
+
+    # User logged in
+    return redirect(url_for("scan"))
 
 # ---------------------------------------------------
 # Scan QR
@@ -599,7 +618,7 @@ def admin():
 
 @app.route("/approve/<int:cid>")
 @admin_required
-def approve(cid():
+def approve(cid):
 
     with get_db() as db:
 
