@@ -122,9 +122,45 @@ def init_db():
         db.commit()
 
 
-# IMPORTANT FOR RENDER
-with app.app_context():
-    init_db()
+# ---------------------------------------------------
+# Database Updater
+# ---------------------------------------------------
+
+def update_database():
+
+    with get_db() as db:
+
+        existing = db.execute(
+            "PRAGMA table_info(customers)"
+        ).fetchall()
+
+        columns = [
+            col["name"]
+            for col in existing
+        ]
+
+        if "pending_visit" not in columns:
+
+            db.execute("""
+                ALTER TABLE customers
+                ADD COLUMN pending_visit INTEGER DEFAULT 0
+            """)
+
+        if "last_scan" not in columns:
+
+            db.execute("""
+                ALTER TABLE customers
+                ADD COLUMN last_scan TEXT DEFAULT ''
+            """)
+
+        if "created_at" not in columns:
+
+            db.execute("""
+                ALTER TABLE customers
+                ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            """)
+
+        db.commit()
 
 # ---------------------------------------------------
 # QR Generator
@@ -134,7 +170,7 @@ def generate_qr():
 
     host = os.environ.get(
         "APP_HOST",
-        "http://127.0.0.1:5000"
+        "https://jalan-loyalty.onrender.com"
     )
 
     url = f"{host}/scan"
@@ -368,7 +404,13 @@ def dashboard():
 @login_required
 def scan():
 
-    cid = session["customer_id"]
+    cid = session.get("customer_id")
+
+    if not cid:
+
+        flash("Please login first.", "danger")
+
+        return redirect(url_for("index"))
 
     today = datetime.now().strftime("%Y-%m-%d")
 
@@ -379,8 +421,28 @@ def scan():
             (cid,)
         ).fetchone()
 
-        # Prevent multiple scans same day
-        if customer["last_scan"] == today:
+        if not customer:
+
+            session.clear()
+
+            flash("Customer not found.", "danger")
+
+            return redirect(url_for("index"))
+
+        last_scan = (
+            customer["last_scan"]
+            if "last_scan" in customer.keys()
+            else ""
+        )
+
+        pending_visit = (
+            customer["pending_visit"]
+            if "pending_visit" in customer.keys()
+            else 0
+        )
+
+        # Prevent multiple scans
+        if last_scan == today:
 
             flash(
                 "You already scanned today.",
@@ -389,8 +451,8 @@ def scan():
 
             return redirect(url_for("dashboard"))
 
-        # Already pending
-        if customer["pending_visit"] == 1:
+        # Prevent duplicate pending
+        if pending_visit == 1:
 
             flash(
                 "Visit already pending approval.",
@@ -399,7 +461,7 @@ def scan():
 
             return redirect(url_for("dashboard"))
 
-        # Create pending request
+        # Update request
         db.execute("""
             UPDATE customers
             SET pending_visit = 1,
@@ -407,7 +469,7 @@ def scan():
             WHERE id = ?
         """, (today, cid))
 
-        # Log visit
+        # Add visit log
         db.execute("""
             INSERT INTO visit_logs
             (customer_id, visit_date, approved)
@@ -537,7 +599,7 @@ def admin():
 
 @app.route("/approve/<int:cid>")
 @admin_required
-def approve(cid):
+def approve(cid():
 
     with get_db() as db:
 
@@ -819,12 +881,22 @@ def claim_reward():
     return redirect(url_for("dashboard"))
 
 # ---------------------------------------------------
+# Startup
+# ---------------------------------------------------
+
+with app.app_context():
+
+    init_db()
+
+    update_database()
+
+    generate_qr()
+
+# ---------------------------------------------------
 # Main
 # ---------------------------------------------------
 
 if __name__ == "__main__":
-
-    generate_qr()
 
     app.run(
         host="0.0.0.0",
