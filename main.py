@@ -227,7 +227,6 @@ def logout():
 # =====================================================
 # DASHBOARD
 # =====================================================
-
 @app.route("/dashboard")
 @login_required
 def dashboard():
@@ -239,21 +238,62 @@ def dashboard():
             (session["customer_id"],)
         ).fetchone()
 
+        reward_history = db.execute("""
+            SELECT *
+            FROM reward_claims
+            WHERE customer_id = ?
+            ORDER BY claimed_at DESC
+        """, (
+            session["customer_id"],
+        )).fetchall()
+
     if not customer:
 
         session.clear()
 
         return redirect(url_for("index"))
 
-    reward = compute_reward(customer["visits"])
+    visits = customer["visits"]
+
+    reward = compute_reward(visits)
+
+    next_target, next_gift = next_reward(visits)
+
+    if next_target:
+
+        progress_pct = int(
+            (visits / next_target) * 100
+        )
+
+        remaining = next_target - visits
+
+    else:
+
+        progress_pct = 100
+
+        remaining = 0
 
     return render_template(
         "dashboard.html",
-        customer=customer,
-        reward=reward,
-        shop=SHOP_INFO
-    )
 
+        customer=customer,
+
+        reward=reward,
+
+        next_reward=next_gift,
+
+        next_milestone=next_target,
+
+        remaining=remaining,
+
+        progress_pct=progress_pct,
+
+        reward_history=reward_history,
+
+        shop=SHOP_INFO,
+
+        max_stars=15
+    )
 # =====================================================
 # SCAN
 # =====================================================
