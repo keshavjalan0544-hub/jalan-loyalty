@@ -80,7 +80,6 @@ def init_db():
 
     with get_db() as db:
 
-        # CUSTOMERS
         db.execute("""
             CREATE TABLE IF NOT EXISTS customers (
 
@@ -102,7 +101,6 @@ def init_db():
             )
         """)
 
-        # VISITS
         db.execute("""
             CREATE TABLE IF NOT EXISTS visit_logs (
 
@@ -118,7 +116,6 @@ def init_db():
             )
         """)
 
-        # REWARD CLAIMS
         db.execute("""
             CREATE TABLE IF NOT EXISTS reward_claims (
 
@@ -219,6 +216,34 @@ def next_reward(visits):
             return item["visits"], item["reward"]
 
     return None, None
+
+# ---------------------------------------------------
+# STAR SYSTEM
+# ---------------------------------------------------
+
+def calculate_stars(visits):
+
+    if visits >= 15:
+        return 3
+
+    elif visits >= 10:
+        return 2
+
+    elif visits >= 5:
+        return 1
+
+    return 0
+
+# ---------------------------------------------------
+# GLOBAL TEMPLATE FUNCTIONS
+# ---------------------------------------------------
+
+@app.context_processor
+def utility_processor():
+
+    return dict(
+        compute_reward=compute_reward
+    )
 
 # ---------------------------------------------------
 # LOGIN REQUIRED
@@ -379,6 +404,10 @@ def dashboard():
 
     next_target, next_gift = next_reward(visits)
 
+    star_filled = calculate_stars(visits)
+
+    max_stars = 3
+
     if next_target:
 
         progress_pct = int(
@@ -409,6 +438,10 @@ def dashboard():
         progress_pct=progress_pct,
 
         reward_history=reward_history,
+
+        star_filled=star_filled,
+
+        max_stars=max_stars,
 
         shop=SHOP_INFO
     )
@@ -592,8 +625,6 @@ def admin():
         top_customers=top_customers,
 
         search=search,
-
-        compute_reward=compute_reward,
 
         shop=SHOP_INFO
     )
