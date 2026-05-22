@@ -5,18 +5,13 @@ Admin Panel — Jalan Sales Loyalty
 {% endblock %}
 
 {% block extra_head %}
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 {% endblock %}
 
 {% block nav_actions %}
 
 <span class="nav-pill"
-      style="
-        color:var(--gold-1);
-        border-color:rgba(246,201,14,0.35)
-      ">
+      style="color:var(--gold-1);border-color:rgba(246,201,14,0.35)">
 
   🛡️ Admin
 
@@ -31,16 +26,13 @@ Admin Panel — Jalan Sales Loyalty
 
 <a href="{{ url_for('approve_all') }}"
    class="nav-pill"
-   style="
-      background:rgba(0,200,83,0.15);
-      color:#00e676;
-   ">
+   style="background:rgba(0,200,83,0.15);color:#00e676;">
 
    ✅ Approve All
 
 </a>
 
-<a href="{{ url_for('admin_logout') }}"
+<a href="{{ url_for('logout') }}"
    class="nav-pill danger">
 
    ← Logout
@@ -53,9 +45,7 @@ Admin Panel — Jalan Sales Loyalty
 
 <div class="admin-container">
 
-  <!-- ================================= -->
   <!-- HEADER -->
-  <!-- ================================= -->
 
   <div class="glass-card p-4 mb-4 fade-up">
 
@@ -67,25 +57,15 @@ Admin Panel — Jalan Sales Loyalty
           🏢 Jalan Sales
         </span>
 
-        <h1 style="
-          margin-top:10px;
-          color:var(--gold-1);
-          font-weight:700;
-        ">
+        <h1 style="margin-top:10px;color:var(--gold-1);font-weight:700;">
           Cement Loyalty Dashboard
         </h1>
 
-        <p style="
-          color:var(--text-muted);
-          margin-top:6px;
-        ">
+        <p style="color:var(--text-muted);margin-top:6px;">
           MP BIRLA CHETAK CEMENT • Industrial Loyalty System
         </p>
 
-        <p style="
-          color:var(--text-muted);
-          font-size:0.85rem;
-        ">
+        <p style="color:var(--text-muted);font-size:0.85rem;">
           📍 Todi College Road, Laxmangarh, Sikar
         </p>
 
@@ -114,9 +94,7 @@ Admin Panel — Jalan Sales Loyalty
 
   </div>
 
-  <!-- ================================= -->
   <!-- STATS -->
-  <!-- ================================= -->
 
   <div class="row g-3 mb-4">
 
@@ -163,7 +141,7 @@ Admin Panel — Jalan Sales Loyalty
         <div class="stat-icon">⭐</div>
 
         <div class="stat-number">
-          {{ customers|sum(attribute='visits') }}
+          {{ stats.visits or 0 }}
         </div>
 
         <div class="stat-label">
@@ -181,11 +159,11 @@ Admin Panel — Jalan Sales Loyalty
         <div class="stat-icon">🎁</div>
 
         <div class="stat-number">
-          {{ stats.tiffin or 0 }}
+          {{ top_customers|length }}
         </div>
 
         <div class="stat-label">
-          Rewards Unlocked
+          Top Customers
         </div>
 
       </div>
@@ -194,9 +172,7 @@ Admin Panel — Jalan Sales Loyalty
 
   </div>
 
-  <!-- ================================= -->
-  <!-- SEARCH + FILTER -->
-  <!-- ================================= -->
+  <!-- SEARCH -->
 
   <div class="glass-card p-4 mb-4 fade-up">
 
@@ -205,7 +181,7 @@ Admin Panel — Jalan Sales Loyalty
 
       <div class="row g-3 align-items-center">
 
-        <div class="col-md-5">
+        <div class="col-md-8">
 
           <input type="text"
                  name="q"
@@ -215,41 +191,7 @@ Admin Panel — Jalan Sales Loyalty
 
         </div>
 
-        <div class="col-md-3">
-
-          <select name="filter"
-                  class="form-control-glass">
-
-            <option value="">
-              All Customers
-            </option>
-
-            <option value="pending">
-              Pending Only
-            </option>
-
-          </select>
-
-        </div>
-
-        <div class="col-md-2">
-
-          <select name="sort"
-                  class="form-control-glass">
-
-            <option value="latest">
-              Latest
-            </option>
-
-            <option value="visits">
-              Most Visits
-            </option>
-
-          </select>
-
-        </div>
-
-        <div class="col-md-2">
+        <div class="col-md-4">
 
           <button class="btn-gold w-100">
 
@@ -265,45 +207,7 @@ Admin Panel — Jalan Sales Loyalty
 
   </div>
 
-  <!-- ================================= -->
-  <!-- ANALYTICS -->
-  <!-- ================================= -->
-
-  <div class="row g-4 mb-4">
-
-    <div class="col-lg-6">
-
-      <div class="glass-card p-4">
-
-        <h3 class="mb-3">
-          📈 Weekly Visits
-        </h3>
-
-        <canvas id="visitChart"></canvas>
-
-      </div>
-
-    </div>
-
-    <div class="col-lg-6">
-
-      <div class="glass-card p-4">
-
-        <h3 class="mb-3">
-          🎁 Reward Claims
-        </h3>
-
-        <canvas id="rewardChart"></canvas>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- ================================= -->
   <!-- TOP CUSTOMERS -->
-  <!-- ================================= -->
 
   <div class="glass-card p-4 mb-4">
 
@@ -321,15 +225,11 @@ Admin Panel — Jalan Sales Loyalty
 
     <div class="top-customers">
 
-      {% for c in customers[:5] %}
+      {% for c in top_customers %}
 
-      <div class="top-customer-item">
+      <div class="top-customer-item mb-3">
 
-        <div class="d-flex align-items-center gap-3">
-
-          <div class="top-rank">
-            #{{ loop.index }}
-          </div>
+        <div class="d-flex justify-content-between align-items-center">
 
           <div>
 
@@ -337,19 +237,16 @@ Admin Panel — Jalan Sales Loyalty
               {{ c.name }}
             </div>
 
-            <div style="
-              color:var(--text-muted);
-              font-size:0.75rem;
-            ">
+            <div style="color:var(--text-muted);font-size:0.75rem;">
               {{ c.phone }}
             </div>
 
           </div>
 
-        </div>
+          <div class="badge-pill badge-visits">
+            ⭐ {{ c.visits }}
+          </div>
 
-        <div class="badge-pill badge-visits">
-          ⭐ {{ c.visits }}
         </div>
 
       </div>
@@ -360,9 +257,7 @@ Admin Panel — Jalan Sales Loyalty
 
   </div>
 
-  <!-- ================================= -->
   <!-- CUSTOMER TABLE -->
-  <!-- ================================= -->
 
   <div class="glass-card fade-up"
        style="overflow:hidden">
@@ -377,26 +272,15 @@ Admin Panel — Jalan Sales Loyalty
 
         <div>
 
-          <h3 style="
-            color:var(--text-main);
-          ">
+          <h3 style="color:var(--text-main);">
             Customer Records
           </h3>
 
-          <p style="
-            color:var(--text-muted);
-            font-size:0.8rem;
-          ">
+          <p style="color:var(--text-muted);font-size:0.8rem;">
             Showing {{ customers|length }} customers
           </p>
 
         </div>
-
-        <span class="badge-pill badge-visits">
-
-          📊 Live Database
-
-        </span>
 
       </div>
 
@@ -416,7 +300,6 @@ Admin Panel — Jalan Sales Loyalty
             <th>Visits</th>
             <th>Reward</th>
             <th>Status</th>
-            <th>Joined</th>
             <th>Action</th>
 
           </tr>
@@ -427,46 +310,11 @@ Admin Panel — Jalan Sales Loyalty
 
           {% for c in customers %}
 
-          <tr {% if c.pending_visit %}style="background:rgba(246,201,14,0.05)"{% endif %}>
+          <tr>
 
             <td>#{{ c.id }}</td>
 
-            <td>
-
-              <div class="d-flex align-items-center gap-2">
-
-                <div style="
-                  width:40px;
-                  height:40px;
-                  border-radius:50%;
-                  background:rgba(246,201,14,0.12);
-                  display:flex;
-                  align-items:center;
-                  justify-content:center;
-                  color:var(--gold-1);
-                  font-weight:700;
-                ">
-                  {{ c.name[0] }}
-                </div>
-
-                <div>
-
-                  <div style="font-weight:600">
-                    {{ c.name }}
-                  </div>
-
-                  <div style="
-                    color:var(--text-muted);
-                    font-size:0.72rem;
-                  ">
-                    Loyalty Member
-                  </div>
-
-                </div>
-
-              </div>
-
-            </td>
+            <td>{{ c.name }}</td>
 
             <td>{{ c.phone }}</td>
 
@@ -508,20 +356,11 @@ Admin Panel — Jalan Sales Loyalty
 
               {% else %}
 
-              <span style="
-                color:#00e676;
-                font-weight:600;
-              ">
+              <span style="color:#00e676;font-weight:600;">
                 ✓ Active
               </span>
 
               {% endif %}
-
-            </td>
-
-            <td>
-
-              {{ c.created_at[:10] }}
 
             </td>
 
@@ -532,7 +371,7 @@ Admin Panel — Jalan Sales Loyalty
               <div class="d-flex gap-2">
 
                 <a href="{{ url_for('approve', cid=c.id) }}"
-                   class="btn-glass btn-success-glass">
+                   class="btn-glass">
 
                    ✅
 
@@ -540,10 +379,7 @@ Admin Panel — Jalan Sales Loyalty
 
                 <a href="{{ url_for('reject', cid=c.id) }}"
                    class="btn-glass"
-                   style="
-                      background:rgba(255,0,0,0.15);
-                      color:#ff8080;
-                   ">
+                   style="background:rgba(255,0,0,0.15);color:#ff8080;">
 
                    ❌
 
@@ -574,71 +410,5 @@ Admin Panel — Jalan Sales Loyalty
   </div>
 
 </div>
-
-<!-- ================================= -->
-<!-- CHART JS -->
-<!-- ================================= -->
-
-<script>
-
-const visitCtx = document
-.getElementById('visitChart');
-
-new Chart(visitCtx, {
-
-    type: 'line',
-
-    data: {
-
-        labels: [
-            'Mon',
-            'Tue',
-            'Wed',
-            'Thu',
-            'Fri',
-            'Sat',
-            'Sun'
-        ],
-
-        datasets: [{
-
-            label: 'Visits',
-
-            data: [12, 19, 8, 15, 25, 18, 30],
-
-            tension: 0.4
-
-        }]
-
-    }
-
-});
-
-const rewardCtx = document
-.getElementById('rewardChart');
-
-new Chart(rewardCtx, {
-
-    type: 'doughnut',
-
-    data: {
-
-        labels: [
-            'Bottle',
-            'Tiffin',
-            'Thali'
-        ],
-
-        datasets: [{
-
-            data: [12, 8, 4]
-
-        }]
-
-    }
-
-});
-
-</script>
 
 {% endblock %}
