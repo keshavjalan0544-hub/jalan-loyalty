@@ -346,7 +346,7 @@
         font-size:0.82rem;
         margin-top:6px;
       ">
-        Tap below after visiting the shop
+        Tap below after visiting Jalan Sales
       </p>
 
       <a href="{{ url_for('scan') }}"
@@ -369,20 +369,65 @@
   <!-- Footer -->
   <div class="text-center mt-4 fade-up">
 
-    <p style="
-      font-size:0.74rem;
-      color:var(--text-muted);
-      margin-bottom:4px;
-    ">
-      📅 Member since {{ customer.created_at[:10] }}
-    </p>
+    <div class="glass-card p-3"
+         style="
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(246,201,14,0.08);
+         ">
 
-    <p style="
-      font-size:0.72rem;
-      color:var(--text-muted);
-    ">
-      📱 {{ customer.phone }}
-    </p>
+        <h4 style="
+            color:var(--gold-1);
+            font-size:1rem;
+            margin-bottom:10px;
+            font-weight:700;
+        ">
+            🏢 Jalan Sales
+        </h4>
+
+        <p style="
+          font-size:0.78rem;
+          color:var(--text-muted);
+          margin-bottom:6px;
+        ">
+          📍 Todi College Road, Laxmangarh, Sikar
+        </p>
+
+        <p style="
+          font-size:0.78rem;
+          color:var(--text-muted);
+          margin-bottom:6px;
+        ">
+          📞 8432142122 / 9414037524
+        </p>
+
+        <p style="
+          font-size:0.78rem;
+          color:var(--text-muted);
+          margin-bottom:10px;
+        ">
+          📞 9783859653 / 9660978524
+        </p>
+
+        <hr style="
+            border-color:rgba(255,255,255,0.08);
+        ">
+
+        <p style="
+          font-size:0.72rem;
+          color:var(--text-muted);
+          margin-bottom:4px;
+        ">
+          📅 Member since {{ customer.created_at[:10] }}
+        </p>
+
+        <p style="
+          font-size:0.72rem;
+          color:var(--text-muted);
+        ">
+          👤 Registered Mobile: {{ customer.phone }}
+        </p>
+
+    </div>
 
   </div>
 

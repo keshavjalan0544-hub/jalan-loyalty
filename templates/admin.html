@@ -19,7 +19,18 @@ Admin Panel — Jalan Sales Loyalty
 <a href="{{ url_for('download') }}"
    class="nav-pill">
 
-   ⬇️ CSV
+   ⬇️ Export CSV
+
+</a>
+
+<a href="{{ url_for('approve_all') }}"
+   class="nav-pill"
+   style="
+      background:rgba(0,200,83,0.15);
+      color:#00e676;
+   ">
+
+   ✅ Approve All
 
 </a>
 
@@ -47,8 +58,9 @@ Admin Panel — Jalan Sales Loyalty
 
       <h2 class="brand mt-2"
           style="
-            font-size:1.6rem;
+            font-size:1.8rem;
             margin-top:8px;
+            color:var(--gold-1);
           ">
 
         Admin Dashboard
@@ -57,13 +69,23 @@ Admin Panel — Jalan Sales Loyalty
 
       <p style="
         color:var(--text-muted);
-        font-size:0.85rem;
+        font-size:0.9rem;
         margin-top:4px;
       ">
 
-        Manage customers, rewards & approvals
+        Cement & Hardware Loyalty Management System
 
       </p>
+
+      <div style="
+          margin-top:10px;
+          color:var(--text-muted);
+          font-size:0.8rem;
+      ">
+
+        📍 Todi College Road, Laxmangarh, Sikar
+
+      </div>
 
     </div>
 
@@ -76,18 +98,19 @@ Admin Panel — Jalan Sales Loyalty
              alt="Shop QR"
              style="
               width:180px;
-              border-radius:12px;
+              border-radius:14px;
+              box-shadow:0 10px 30px rgba(0,0,0,0.35);
              ">
 
       </div>
 
       <p style="
-        font-size:0.75rem;
+        font-size:0.8rem;
         color:var(--text-muted);
-        margin-top:10px;
+        margin-top:12px;
       ">
 
-        Customer Scan QR
+        📱 Scan QR At Billing Counter
 
       </p>
 
@@ -98,11 +121,12 @@ Admin Panel — Jalan Sales Loyalty
   <!-- STATS -->
   <div class="row g-3 mb-4">
 
-    <div class="col-6 col-md-4">
+    <!-- TOTAL -->
+    <div class="col-6 col-md-3">
 
       <div class="glass-card stat-card gold fade-up">
 
-        <div style="font-size:1.6rem">👥</div>
+        <div style="font-size:1.7rem">👥</div>
 
         <div class="stat-number">
           {{ stats.total or 0 }}
@@ -116,11 +140,12 @@ Admin Panel — Jalan Sales Loyalty
 
     </div>
 
-    <div class="col-6 col-md-4">
+    <!-- PENDING -->
+    <div class="col-6 col-md-3">
 
       <div class="glass-card stat-card red fade-up">
 
-        <div style="font-size:1.6rem">⏳</div>
+        <div style="font-size:1.7rem">⏳</div>
 
         <div class="stat-number">
           {{ stats.pending or 0 }}
@@ -134,11 +159,12 @@ Admin Panel — Jalan Sales Loyalty
 
     </div>
 
-    <div class="col-6 col-md-4">
+    <!-- VISITS -->
+    <div class="col-6 col-md-3">
 
       <div class="glass-card stat-card green fade-up">
 
-        <div style="font-size:1.6rem">⭐</div>
+        <div style="font-size:1.7rem">⭐</div>
 
         <div class="stat-number">
           {{ customers|sum(attribute='visits') }}
@@ -146,6 +172,25 @@ Admin Panel — Jalan Sales Loyalty
 
         <div class="stat-label">
           Total Visits
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- REWARDS -->
+    <div class="col-6 col-md-3">
+
+      <div class="glass-card stat-card fade-up">
+
+        <div style="font-size:1.7rem">🎁</div>
+
+        <div class="stat-number">
+          {{ stats.tiffin or 0 }}
+        </div>
+
+        <div class="stat-label">
+          Rewards Unlocked
         </div>
 
       </div>
@@ -227,7 +272,7 @@ Admin Panel — Jalan Sales Loyalty
 
           {% for c in customers %}
 
-          <tr {% if c.pending_visit %}style="background:rgba(246,201,14,0.05);" {% endif %}>
+          <tr {% if c.pending_visit %}style="background:rgba(246,201,14,0.06);" {% endif %}>
 
             <!-- ID -->
             <td>
@@ -243,14 +288,14 @@ Admin Panel — Jalan Sales Loyalty
 
             </td>
 
-            <!-- NAME -->
+            <!-- CUSTOMER -->
             <td>
 
               <div class="d-flex align-items-center gap-2">
 
                 <div style="
-                  width:36px;
-                  height:36px;
+                  width:38px;
+                  height:38px;
                   border-radius:50%;
                   background:rgba(246,201,14,0.12);
                   display:flex;
@@ -370,7 +415,7 @@ Admin Panel — Jalan Sales Loyalty
 
             </td>
 
-            <!-- JOINED -->
+            <!-- DATE -->
             <td>
 
               <span style="

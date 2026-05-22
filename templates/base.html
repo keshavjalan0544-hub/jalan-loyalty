@@ -1,52 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>{% block title %}Jalan Loyalty{% endblock %}</title>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-  <!-- Meta (SEO + mobile) -->
-  <meta name="description" content="Jalan Sales Loyalty System">
-  <meta name="theme-color" content="#000000">
+  <title>
+    Jalan Sales Loyalty Program
+  </title>
 
-  <!-- Favicon (recommended static file) -->
-  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <!-- Meta -->
+  <meta name="description"
+        content="Jalan Sales Cement & Hardware Loyalty Program">
+
+  <meta name="theme-color"
+        content="#121212">
+
+  <!-- Favicon -->
+  <link rel="icon"
+        href="{{ url_for('static', filename='img/cement-bag.jpg') }}">
 
   <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
 
   <!-- Custom CSS -->
-  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}"
+        rel="stylesheet">
 
   {% block extra_head %}{% endblock %}
+
 </head>
 
 <body>
 
   <!-- Navbar -->
   {% block navbar %}
-  <nav class="navbar navbar-expand-lg fixed-top bg-light bg-opacity-75 shadow-sm backdrop-blur">
+
+  <nav class="navbar navbar-expand-lg fixed-top shadow-sm"
+       style="
+          background:rgba(18,18,18,0.92);
+          backdrop-filter:blur(10px);
+          border-bottom:1px solid rgba(255,255,255,0.08);
+       ">
+
     <div class="container-fluid px-3">
 
-      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
-        <span style="font-size:1.5rem">🪵</span>
-        <span class="brand">Jalan Sales</span>
+      <!-- Brand -->
+      <a class="navbar-brand d-flex align-items-center gap-3"
+         href="{{ url_for('index') }}">
+
+        <img src="{{ url_for('static', filename='img/cement-bag.jpg') }}"
+             alt="Jalan Sales"
+             style="
+                width:45px;
+                height:45px;
+                object-fit:cover;
+                border-radius:12px;
+                box-shadow:0 4px 12px rgba(0,0,0,0.35);
+             ">
+
+        <div>
+
+          <div class="brand"
+               style="
+                  font-weight:700;
+                  color:var(--gold-1);
+                  font-size:1.1rem;
+                  line-height:1.1;
+               ">
+
+            Jalan Sales
+
+          </div>
+
+          <div style="
+              font-size:0.7rem;
+              color:var(--text-muted);
+           ">
+
+            Cement & Hardware Loyalty
+
+          </div>
+
+        </div>
+
       </a>
 
+      <!-- Right Actions -->
       <div class="d-flex align-items-center gap-2 ms-auto">
+
         {% block nav_actions %}{% endblock %}
+
       </div>
 
     </div>
+
   </nav>
+
   {% endblock %}
 
   <!-- Flash Messages -->
-  <div class="flash-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+  <div class="flash-container position-fixed top-0 end-0 p-3"
+       style="z-index:9999; margin-top:75px;">
+
     {% with messages = get_flashed_messages(with_categories=True) %}
+
       {% for category, message in messages %}
+
         <div class="flash-msg {{ category }}">
+
           {% if category == 'success' %}
             ✅
           {% elif category == 'danger' %}
@@ -56,16 +122,84 @@
           {% else %}
             ℹ️
           {% endif %}
+
           {{ message }}
+
         </div>
+
       {% endfor %}
+
     {% endwith %}
+
   </div>
 
-  <!-- Page Content -->
-  <main style="padding-top: 70px;">
+  <!-- Main Content -->
+  <main style="padding-top:90px; min-height:100vh;">
+
     {% block content %}{% endblock %}
+
   </main>
+
+  <!-- Footer -->
+  <footer style="
+      margin-top:60px;
+      padding:25px 15px;
+      text-align:center;
+      border-top:1px solid rgba(255,255,255,0.08);
+      background:#121212;
+  ">
+
+    <h5 style="
+        color:var(--gold-1);
+        font-weight:700;
+        margin-bottom:12px;
+    ">
+
+      🏢 Jalan Sales
+
+    </h5>
+
+    <p style="
+      color:var(--text-muted);
+      margin-bottom:6px;
+      font-size:0.92rem;
+    ">
+
+      📍 Todi College Road, Laxmangarh, Sikar
+
+    </p>
+
+    <p style="
+      color:var(--text-muted);
+      margin-bottom:6px;
+      font-size:0.92rem;
+    ">
+
+      📞 8432142122 | 9414037524
+
+    </p>
+
+    <p style="
+      color:var(--text-muted);
+      margin-bottom:6px;
+      font-size:0.92rem;
+    ">
+
+      📞 9783859653 | 9660978524
+
+    </p>
+
+    <p style="
+      color:var(--gold-1);
+      font-size:0.82rem;
+      margin-top:12px;
+    ">
+
+      Premium Cement & Hardware Loyalty Program
+
+    </p>
+
+  </footer>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -76,4 +210,5 @@
   {% block extra_scripts %}{% endblock %}
 
 </body>
+
 </html>
