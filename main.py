@@ -173,7 +173,7 @@ def generate_qr():
         "https://jalan-loyalty.onrender.com"
     )
 
-    url = f"{host}/scan"
+    url = f"{host}/qr-scan"
 
     os.makedirs("static/img", exist_ok=True)
 
