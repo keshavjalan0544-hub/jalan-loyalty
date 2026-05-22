@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}
+Scan QR — Jalan Sales
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+
+<div class="hero-section d-flex align-items-center justify-content-center">
+
+  <div class="login-card glass-card fade-up">
+
+    <div class="text-center mb-4">
+
+      <div class="hero-logo">
+        📲
+      </div>
+
+      <h2 class="brand">
+        Scan Loyalty QR
+      </h2>
+
+      <p class="tagline">
+        Login to add your visit
+      </p>
+
+    </div>
+
+    <form method="POST"
+          action="{{ url_for('login') }}">
+
+      <div class="mb-3">
+
+        <label>
+          Your Name
+        </label>
+
+        <input type="text"
+               name="name"
+               class="form-control-glass"
+               required>
+
+      </div>
+
+      <div class="mb-4">
+
+        <label>
+          Mobile Number
+        </label>
+
+        <input type="tel"
+               name="phone"
+               class="form-control-glass"
+               required>
+
+      </div>
+
+      <button class="btn-gold w-100">
+
+        🚀 Continue
+
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+{% endblock %}

@@ -218,34 +218,6 @@ def next_reward(visits):
     return None, None
 
 # ---------------------------------------------------
-# STAR SYSTEM
-# ---------------------------------------------------
-
-def calculate_stars(visits):
-
-    if visits >= 15:
-        return 3
-
-    elif visits >= 10:
-        return 2
-
-    elif visits >= 5:
-        return 1
-
-    return 0
-
-# ---------------------------------------------------
-# GLOBAL TEMPLATE FUNCTIONS
-# ---------------------------------------------------
-
-@app.context_processor
-def utility_processor():
-
-    return dict(
-        compute_reward=compute_reward
-    )
-
-# ---------------------------------------------------
 # LOGIN REQUIRED
 # ---------------------------------------------------
 
@@ -404,10 +376,6 @@ def dashboard():
 
     next_target, next_gift = next_reward(visits)
 
-    star_filled = calculate_stars(visits)
-
-    max_stars = 3
-
     if next_target:
 
         progress_pct = int(
@@ -424,45 +392,27 @@ def dashboard():
 
     return render_template(
         "dashboard.html",
-
         customer=customer,
-
         reward=reward,
-
         next_reward=next_gift,
-
         next_milestone=next_target,
-
         remaining=remaining,
-
         progress_pct=progress_pct,
-
         reward_history=reward_history,
-
-        star_filled=star_filled,
-
-        max_stars=max_stars,
-
         shop=SHOP_INFO
     )
 
 # ---------------------------------------------------
-# QR PUBLIC ROUTE
+# QR PAGE
 # ---------------------------------------------------
 
 @app.route("/qr-scan")
 def qr_scan():
 
-    if "customer_id" not in session:
-
-        flash(
-            "Please login before scanning QR.",
-            "warning"
-        )
-
-        return redirect(url_for("index"))
-
-    return redirect(url_for("scan"))
+    return render_template(
+        "qr_scan.html",
+        shop=SHOP_INFO
+    )
 
 # ---------------------------------------------------
 # SCAN
@@ -556,55 +506,19 @@ def admin():
 
     search = request.args.get("q", "").strip()
 
-    pending_only = request.args.get("pending")
-
-    sort = request.args.get("sort")
-
-    query = "SELECT * FROM customers"
-
-    filters = []
-
-    params = []
-
-    if search:
-
-        filters.append(
-            "(name LIKE ? OR phone LIKE ?)"
-        )
-
-        params.extend([
-            f"%{search}%",
-            f"%{search}%"
-        ])
-
-    if pending_only:
-
-        filters.append("pending_visit = 1")
-
-    if filters:
-
-        query += " WHERE " + " AND ".join(filters)
-
-    if sort == "visits":
-
-        query += " ORDER BY visits DESC"
-
-    else:
-
-        query += " ORDER BY pending_visit DESC, id DESC"
+    query = "SELECT * FROM customers ORDER BY pending_visit DESC, id DESC"
 
     with get_db() as db:
 
         customers = db.execute(
-            query,
-            params
+            query
         ).fetchall()
 
         stats = db.execute("""
             SELECT
                 COUNT(*) as total,
-                SUM(pending_visit) as pending,
-                SUM(visits) as visits
+                COALESCE(SUM(pending_visit),0) as pending,
+                COALESCE(SUM(visits),0) as visits
             FROM customers
         """).fetchone()
 
@@ -617,15 +531,11 @@ def admin():
 
     return render_template(
         "admin.html",
-
         customers=customers,
-
         stats=stats,
-
         top_customers=top_customers,
-
         search=search,
-
+        compute_reward=compute_reward,
         shop=SHOP_INFO
     )
 
@@ -659,13 +569,6 @@ def approve(cid):
             reward,
             cid
         ))
-
-        db.execute("""
-            UPDATE visit_logs
-            SET approved = 1
-            WHERE customer_id = ?
-            AND approved = 0
-        """, (cid,))
 
         db.commit()
 
@@ -736,54 +639,7 @@ def approve_all():
     return redirect(url_for("admin"))
 
 # ---------------------------------------------------
-# CLAIM REWARD
-# ---------------------------------------------------
-
-@app.route("/claim_reward")
-@login_required
-def claim_reward():
-
-    cid = session["customer_id"]
-
-    with get_db() as db:
-
-        customer = db.execute(
-            "SELECT * FROM customers WHERE id = ?",
-            (cid,)
-        ).fetchone()
-
-        reward = compute_reward(customer["visits"])
-
-        if not reward:
-
-            flash("No reward available.", "warning")
-
-            return redirect(url_for("dashboard"))
-
-        db.execute("""
-            INSERT INTO reward_claims
-            (customer_id, reward)
-            VALUES (?, ?)
-        """, (cid, reward))
-
-        db.execute("""
-            UPDATE customers
-            SET visits = 0,
-                reward = ''
-            WHERE id = ?
-        """, (cid,))
-
-        db.commit()
-
-    flash(
-        f"Reward claimed: {reward}",
-        "success"
-    )
-
-    return redirect(url_for("dashboard"))
-
-# ---------------------------------------------------
-# CSV EXPORT
+# DOWNLOAD CSV
 # ---------------------------------------------------
 
 @app.route("/download")
@@ -831,31 +687,6 @@ def download():
         as_attachment=True,
         download_name="customers.csv"
     )
-
-# ---------------------------------------------------
-# ANALYTICS API
-# ---------------------------------------------------
-
-@app.route("/analytics")
-@admin_required
-def analytics():
-
-    with get_db() as db:
-
-        scans = db.execute("""
-            SELECT visit_date, COUNT(*) as total
-            FROM visit_logs
-            GROUP BY visit_date
-            ORDER BY visit_date ASC
-        """).fetchall()
-
-    return jsonify([
-        {
-            "date": row["visit_date"],
-            "total": row["total"]
-        }
-        for row in scans
-    ])
 
 # ---------------------------------------------------
 # STARTUP
