@@ -559,7 +559,7 @@ def admin():
                 FROM customers
                 WHERE name LIKE ?
                 OR phone LIKE ?
-                ORDER BY id DESC
+                ORDER BY pending_visit DESC, id DESC
             """, (
                 f"%{search}%",
                 f"%{search}%"
@@ -570,7 +570,7 @@ def admin():
             customers = db.execute("""
                 SELECT *
                 FROM customers
-                ORDER BY id DESC
+                ORDER BY pending_visit DESC, id DESC
             """).fetchall()
 
         stats = db.execute("""

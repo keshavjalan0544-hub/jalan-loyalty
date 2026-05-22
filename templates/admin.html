@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Admin Panel — Jalan Loyalty
+Admin Panel — Jalan Sales Loyalty
 {% endblock %}
 
 {% block nav_actions %}
@@ -42,7 +42,7 @@ Admin Panel — Jalan Loyalty
     <div>
 
       <span class="welcome-badge">
-        🪵 Jalan Sales
+        🏢 Jalan Sales
       </span>
 
       <h2 class="brand mt-2"
@@ -141,7 +141,7 @@ Admin Panel — Jalan Loyalty
         <div style="font-size:1.6rem">⭐</div>
 
         <div class="stat-number">
-          {{ stats.total_visits or 0 }}
+          {{ customers|sum(attribute='visits') }}
         </div>
 
         <div class="stat-label">
@@ -227,7 +227,7 @@ Admin Panel — Jalan Loyalty
 
           {% for c in customers %}
 
-          <tr>
+          <tr {% if c.pending_visit %}style="background:rgba(246,201,14,0.05);" {% endif %}>
 
             <!-- ID -->
             <td>
@@ -350,7 +350,7 @@ Admin Panel — Jalan Loyalty
 
               <span class="badge-pill badge-pending">
 
-                ⏳ Pending
+                ⏳ Pending Approval
 
               </span>
 
@@ -389,16 +389,33 @@ Admin Panel — Jalan Loyalty
 
               {% if c.pending_visit %}
 
-              <a href="{{ url_for('approve', cid=c.id) }}"
-                 class="btn-glass btn-success-glass"
-                 style="
-                  padding:5px 10px;
-                  font-size:0.72rem;
-                 ">
+              <div class="d-flex gap-2 flex-wrap">
 
-                 ✅ Approve
+                <a href="{{ url_for('approve', cid=c.id) }}"
+                   class="btn-glass btn-success-glass"
+                   style="
+                    padding:5px 10px;
+                    font-size:0.72rem;
+                   ">
 
-              </a>
+                   ✅ Approve
+
+                </a>
+
+                <a href="{{ url_for('reject', cid=c.id) }}"
+                   class="btn-glass"
+                   style="
+                    padding:5px 10px;
+                    font-size:0.72rem;
+                    background:rgba(255,0,0,0.15);
+                    color:#ff8080;
+                   ">
+
+                   ❌ Reject
+
+                </a>
+
+              </div>
 
               {% else %}
 
