@@ -1,54 +1,157 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Login — Jalan Loyalty{% endblock %}
+{% block title %}
+Admin Login — Jalan Sales
+{% endblock %}
 
 {% block navbar %}{% endblock %}
 
 {% block content %}
 
-<div class="hero-section d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+<div class="hero-section d-flex align-items-center justify-content-center"
+     style="min-height:100vh; padding:20px;">
 
-  <div class="login-card glass-card fade-up" style="max-width: 380px; width: 100%; padding: 2rem;">
+    <div class="login-card glass-card fade-up"
+         style="
+            max-width:420px;
+            width:100%;
+            padding:2.2rem;
+            position:relative;
+            overflow:hidden;
+         ">
 
-    <!-- Header -->
-    <div class="text-center mb-4">
-      <div class="hero-logo" style="font-size: 1.8rem;">🔐</div>
-      <h2 class="brand mb-1" style="font-size: 1.2rem;">Admin Access</h2>
-      <p class="tagline mb-0">Jalan Sales</p>
+        <!-- Decorative Glow -->
+        <div style="
+            position:absolute;
+            top:-80px;
+            right:-80px;
+            width:180px;
+            height:180px;
+            background:radial-gradient(circle,
+                rgba(246,201,14,0.18),
+                transparent 70%);
+            pointer-events:none;
+        "></div>
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+
+            <!-- Cement Image -->
+            <img src="{{ url_for('static', filename='img/cement-bag.jpg') }}"
+                 alt="Jalan Sales"
+                 style="
+                    width:95px;
+                    height:95px;
+                    object-fit:cover;
+                    border-radius:18px;
+                    box-shadow:0 10px 25px rgba(0,0,0,0.35);
+                    margin-bottom:18px;
+                 ">
+
+            <h2 class="brand"
+                style="
+                    font-size:1.5rem;
+                    color:var(--gold-1);
+                    font-weight:700;
+                ">
+
+                🛡️ Admin Access
+
+            </h2>
+
+            <p style="
+                color:var(--text-muted);
+                font-size:0.88rem;
+                margin-top:6px;
+            ">
+
+                Jalan Sales Loyalty Management
+
+            </p>
+
+        </div>
+
+        <hr class="divider">
+
+        <!-- Form -->
+        <form method="POST">
+
+            <div class="mb-4">
+
+                <label for="pin"
+                       class="form-label"
+                       style="
+                          color:var(--text-main);
+                          margin-bottom:10px;
+                          font-size:0.9rem;
+                       ">
+
+                    Enter Admin PIN
+
+                </label>
+
+                <input
+                    type="password"
+                    class="form-control-glass"
+                    id="pin"
+                    name="pin"
+                    placeholder="🔐 Secure Admin PIN"
+                    autocomplete="current-password"
+                    required
+                >
+
+            </div>
+
+            <button type="submit"
+                    class="btn-gold w-100">
+
+                🚀 Login to Dashboard
+
+            </button>
+
+        </form>
+
+        <!-- Footer -->
+        <div class="text-center mt-4">
+
+            <a href="{{ url_for('index') }}"
+               class="nav-pill"
+               style="
+                    font-size:0.82rem;
+                    text-decoration:none;
+               ">
+
+                ← Back to Customer Login
+
+            </a>
+
+        </div>
+
+        <!-- Extra Info -->
+        <div class="text-center mt-4">
+
+            <p style="
+                color:var(--text-muted);
+                font-size:0.74rem;
+                margin-bottom:5px;
+            ">
+
+                🏢 Jalan Sales — MP Birla Chetak Cement
+
+            </p>
+
+            <p style="
+                color:var(--text-muted);
+                font-size:0.72rem;
+            ">
+
+                📍 Todi College Road, Laxmangarh, Sikar
+
+            </p>
+
+        </div>
+
     </div>
-
-    <hr class="divider">
-
-    <!-- Form -->
-    <form method="POST">
-
-      <div class="mb-4">
-        <label for="pin" class="form-label">Admin PIN</label>
-        <input
-          type="password"
-          class="form-control-glass"
-          id="pin"
-          name="pin"
-          placeholder="Enter PIN"
-          autocomplete="current-password"
-          required
-        >
-      </div>
-
-      <button type="submit" class="btn-gold w-100">
-        🔓 Login to Admin
-      </button>
-
-    </form>
-
-    <!-- Back link -->
-    <div class="text-center mt-4">
-      <a href="{{ url_for('index') }}" class="nav-pill" style="font-size: 0.8rem;">
-        ← Customer Login
-      </a>
-    </div>
-
-  </div>
 
 </div>
 

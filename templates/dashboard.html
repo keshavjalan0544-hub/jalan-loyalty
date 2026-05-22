@@ -2,483 +2,345 @@
 {% block title %}My Rewards — {{ customer.name }}{% endblock %}
 
 {% block nav_actions %}
-  <a href="{{ url_for('logout') }}" class="nav-pill danger">← Logout</a>
+<a href="{{ url_for('logout') }}" class="nav-pill danger">
+    ← Logout
+</a>
 {% endblock %}
 
 {% block content %}
+
 <div class="dashboard-container">
 
-  <!-- Welcome -->
-  <div class="text-center mb-2 fade-up">
-    <span class="welcome-badge">🪵 Premium Loyalty Member</span>
+    <!-- ========================= -->
+    <!-- DIGITAL MEMBERSHIP CARD -->
+    <!-- ========================= -->
 
-    <h2 style="
-      font-size:1.15rem;
-      margin-top:12px;
-      color:var(--text-muted);
-      font-weight:400;
-      font-family:'Outfit',sans-serif;
-    ">
-      Welcome back,
-      <span style="color:var(--gold-1);font-weight:700">
-        {{ customer.name }}
-      </span>
-      👋
-    </h2>
-  </div>
+    <div class="glass-card membership-card fade-up mb-4">
 
-  <!-- Main Visit Card -->
-  <div class="glass-card visit-counter fade-up mb-3">
+        <div class="member-top">
 
-    <!-- Decorative glow -->
-    <div style="
-      position:absolute;
-      top:-80px;
-      right:-80px;
-      width:180px;
-      height:180px;
-      background:radial-gradient(circle, rgba(246,201,14,0.15), transparent 70%);
-      pointer-events:none;
-    "></div>
+            <div class="member-left">
 
-    <p class="visit-label mb-2">Total Visits</p>
+                <img src="{{ url_for('static', filename='img/cement-bag.jpg') }}"
+                     class="member-logo">
 
-    <div class="visit-number"
-         data-count="{{ customer.visits }}">
-      {{ customer.visits }}
+                <div>
+
+                    <p class="member-company">
+                        MP BIRLA CHETAK CEMENT
+                    </p>
+
+                    <h2 class="member-name">
+                        {{ customer.name }}
+                    </h2>
+
+                    <p class="member-id">
+                        Loyalty Member ID #{{ customer.id }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="member-status">
+
+                {% if customer.pending_visit %}
+                    <span class="status-badge pending">
+                        ⏳ Pending
+                    </span>
+                {% else %}
+                    <span class="status-badge active">
+                        ✅ Active
+                    </span>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="member-stats">
+
+            <div class="stat-box">
+                <h3>{{ customer.visits }}</h3>
+                <p>Total Visits</p>
+            </div>
+
+            <div class="stat-box">
+                <h3>{{ reward if reward else "—" }}</h3>
+                <p>Current Reward</p>
+            </div>
+
+            <div class="stat-box">
+                <h3>{{ customer.created_at[:10] }}</h3>
+                <p>Member Since</p>
+            </div>
+
+        </div>
+
     </div>
 
-    <p class="visit-label mt-1">
-      visits completed
-    </p>
+    <!-- ========================= -->
+    <!-- REWARD PROGRESS -->
+    <!-- ========================= -->
 
-    <!-- Stars -->
-    <div class="stars-row"
-         title="{{ star_filled }} of {{ max_stars }} stars">
+    <div class="glass-card fade-up mb-4">
 
-      {% for i in range(max_stars) %}
+        <div class="section-header">
+            <h3>🎯 Reward Progress</h3>
+        </div>
 
-        {% if i < star_filled %}
-          <span class="star filled">⭐</span>
-        {% else %}
-          <span class="star empty">☆</span>
+        <div class="progress-stars">
+
+            {% for i in range(max_stars) %}
+
+                {% if i < star_filled %}
+                    <span class="star filled">⭐</span>
+                {% else %}
+                    <span class="star empty">☆</span>
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+        <div class="progress-count">
+
+            {{ customer.visits }}/{{ next_milestone if next_milestone else 15 }}
+            Visits
+
+        </div>
+
+        <div class="progress-track">
+
+            <div class="progress-fill"
+                 style="width: {{ progress_pct }}%">
+
+            </div>
+
+        </div>
+
+        {% if next_reward %}
+
+        <div class="next-reward">
+
+            🎁 Next Reward:
+            <span>{{ next_reward }}</span>
+
+        </div>
+
         {% endif %}
 
-      {% endfor %}
     </div>
 
-    <!-- Progress -->
-    {% if next_milestone %}
+    <!-- ========================= -->
+    <!-- MILESTONE TRACKER -->
+    <!-- ========================= -->
 
-    <div class="progress-wrap px-2 mt-3">
+    <div class="glass-card fade-up mb-4">
 
-      <div class="progress-label">
-        <span>{{ customer.visits }} visits</span>
+        <div class="section-header">
+            <h3>🏆 Reward Journey</h3>
+        </div>
 
-        <span>
-          {{ next_milestone }} →
-          {{ next_reward }}
-        </span>
-      </div>
+        <div class="milestone-wrapper">
 
-      <div class="progress-track">
-        <div
-          class="progress-fill"
-          id="progressFill"
-          data-target="{{ progress_pct }}"
-          style="width:0%"
-        ></div>
-      </div>
+            <div class="milestone {% if customer.visits >= 5 %}active{% endif %}">
+                <div class="milestone-icon">🍶</div>
+                <div class="milestone-title">Bottle</div>
+                <div class="milestone-step">5 Visits</div>
+            </div>
 
-      <p class="text-center mt-2"
-         style="
-          font-size:0.8rem;
-          color:var(--text-muted)
-         ">
+            <div class="milestone-line"></div>
 
-        Only
+            <div class="milestone {% if customer.visits >= 10 %}active{% endif %}">
+                <div class="milestone-icon">🥡</div>
+                <div class="milestone-title">Tiffin</div>
+                <div class="milestone-step">10 Visits</div>
+            </div>
 
-        <span style="
-          color:var(--gold-1);
-          font-weight:700;
-        ">
-          {{ remaining }}
-        </span>
+            <div class="milestone-line"></div>
 
-        more visit{% if remaining != 1 %}s{% endif %}
-        left to unlock
+            <div class="milestone {% if customer.visits >= 15 %}active{% endif %}">
+                <div class="milestone-icon">🍽️</div>
+                <div class="milestone-title">Thali Set</div>
+                <div class="milestone-step">15 Visits</div>
+            </div>
 
-        <span style="
-          color:var(--gold-1);
-          font-weight:700;
-        ">
-          {{ next_reward }}
-        </span>
-
-      </p>
+        </div>
 
     </div>
 
-    {% else %}
+    <!-- ========================= -->
+    <!-- CURRENT REWARD -->
+    <!-- ========================= -->
 
-    <div class="progress-wrap px-2 mt-3">
+    {% if reward %}
 
-      <div class="progress-track">
-        <div
-          class="progress-fill"
-          id="progressFill"
-          data-target="100"
-          style="width:0%"
-        ></div>
-      </div>
+    <div class="glass-card reward-card fade-up mb-4">
 
-      <p class="text-center mt-2"
-         style="
-          color:var(--gold-1);
-          font-size:0.9rem;
-          font-weight:600;
-         ">
-        👑 You unlocked every reward!
-      </p>
+        <div class="reward-emoji">
+            🎉
+        </div>
+
+        <h2>
+            {{ reward }}
+        </h2>
+
+        <p>
+            Show this reward to staff and claim your gift.
+        </p>
+
+        <a href="{{ url_for('claim_reward') }}"
+           class="btn-gold mt-3">
+
+            🎁 Claim Reward
+
+        </a>
 
     </div>
 
     {% endif %}
 
-  </div>
+    <!-- ========================= -->
+    <!-- RECORD VISIT -->
+    <!-- ========================= -->
 
-  <!-- Reward Milestones -->
-  <div class="glass-card p-4 fade-up mb-3">
+    <div class="glass-card fade-up mb-4 text-center">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+        {% if customer.pending_visit %}
 
-      <div>
-        <p style="
-          color:var(--text-muted);
-          font-size:0.75rem;
-          text-transform:uppercase;
-          letter-spacing:0.08em;
-          font-weight:600;
-        ">
-          Reward Journey
-        </p>
+            <div style="font-size:2.5rem">⏳</div>
 
-        <h3 style="
-          margin-top:4px;
-          font-size:1rem;
-          color:var(--text-main);
-        ">
-          Unlock Amazing Gifts 🎁
+            <h4 class="mt-3">
+                Visit Waiting For Approval
+            </h4>
+
+            <p class="text-muted">
+                Staff will approve your visit shortly.
+            </p>
+
+        {% else %}
+
+            <div style="font-size:2.5rem">📲</div>
+
+            <h4 class="mt-3">
+                Record Your Visit
+            </h4>
+
+            <p class="text-muted">
+                Tap below after shopping at Jalan Sales
+            </p>
+
+            <a href="{{ url_for('scan') }}"
+               class="btn-gold mt-3">
+
+                🚀 Record Visit
+
+            </a>
+
+        {% endif %}
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- REWARD CLAIM HISTORY -->
+    <!-- ========================= -->
+
+    <div class="glass-card fade-up mb-4">
+
+        <div class="section-header">
+            <h3>📜 Reward Claim History</h3>
+        </div>
+
+        {% if claims %}
+
+        <div class="table-responsive">
+
+            <table class="admin-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Reward</th>
+                        <th>Claimed On</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for claim in claims %}
+
+                    <tr>
+
+                        <td>
+                            🎁 {{ claim.reward }}
+                        </td>
+
+                        <td>
+                            {{ claim.claimed_at[:10] }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="text-center text-muted py-4">
+
+            No rewards claimed yet.
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- SHOP INFO -->
+    <!-- ========================= -->
+
+    <div class="glass-card fade-up p-4 text-center">
+
+        <img src="{{ url_for('static', filename='img/cement-bag.jpg') }}"
+             style="
+                width:120px;
+                border-radius:16px;
+                margin-bottom:15px;
+             ">
+
+        <h3 style="color:var(--gold-1)">
+            Jalan Sales
         </h3>
-      </div>
 
-      <div style="
-        width:42px;
-        height:42px;
-        border-radius:50%;
-        background:rgba(246,201,14,0.12);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:1.2rem;
-      ">
-        ✨
-      </div>
-
-    </div>
-
-    <div class="milestones">
-
-      <!-- Bottle -->
-      <div class="milestone-card {% if customer.visits >= 5 %}unlocked{% endif %}">
-
-        <span class="milestone-icon">🍶</span>
-
-        <div class="milestone-name">
-          Bottle
-        </div>
-
-        <div class="milestone-visits">
-          5 Visits
-        </div>
-
-      </div>
-
-      <!-- Tiffin -->
-      <div class="milestone-card {% if customer.visits >= 10 %}unlocked{% endif %}">
-
-        <span class="milestone-icon">🥡</span>
-
-        <div class="milestone-name">
-          Tiffin
-        </div>
-
-        <div class="milestone-visits">
-          10 Visits
-        </div>
-
-      </div>
-
-      <!-- Thali -->
-      <div class="milestone-card {% if customer.visits >= 15 %}unlocked{% endif %}">
-
-        <span class="milestone-icon">🍽️</span>
-
-        <div class="milestone-name">
-          Thali Set
-        </div>
-
-        <div class="milestone-visits">
-          15 Visits
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- Current Reward -->
-  {% if reward %}
-
-  <div class="glass-card fade-up mb-3"
-       style="
-        padding:1.5rem;
-        background:
-          linear-gradient(
-            135deg,
-            rgba(246,201,14,0.12),
-            rgba(246,201,14,0.04)
-          );
-        border:1px solid rgba(246,201,14,0.28);
-       ">
-
-    <div class="text-center">
-
-      <div style="font-size:2.5rem">
-        🎉
-      </div>
-
-      <p style="
-        margin-top:10px;
-        color:var(--text-muted);
-        font-size:0.75rem;
-        text-transform:uppercase;
-        letter-spacing:0.08em;
-        font-weight:600;
-      ">
-        Current Reward
-      </p>
-
-      <h2 style="
-        margin-top:8px;
-        color:var(--gold-1);
-        font-size:2rem;
-        font-weight:700;
-      ">
-        {{ reward }}
-      </h2>
-
-      <p style="
-        margin-top:8px;
-        color:var(--text-muted);
-        font-size:0.82rem;
-      ">
-        Show this reward to staff and enjoy your gift ✨
-      </p>
-
-    </div>
-
-  </div>
-
-  {% endif %}
-
-  <!-- Scan / Pending -->
-  <div class="glass-card p-4 text-center fade-up">
-
-    {% if customer.pending_visit %}
-
-      <!-- Pending -->
-      <div style="font-size:2.3rem">
-        ⏳
-      </div>
-
-      <p class="mt-2"
-         style="
-          color:var(--text-main);
-          font-size:1rem;
-          font-weight:600;
-         ">
-        Visit Waiting for Approval
-      </p>
-
-      <p style="
-        color:var(--text-muted);
-        font-size:0.82rem;
-        margin-top:6px;
-      ">
-        Staff will approve your visit shortly.
-      </p>
-
-      <div class="pending-badge mx-auto mt-3">
-        <span class="pending-dot"></span>
-        Pending Approval
-      </div>
-
-    {% else %}
-
-      <!-- Scan -->
-      <div style="font-size:2.6rem">
-        📲
-      </div>
-
-      <p class="mt-2"
-         style="
-          color:var(--text-main);
-          font-size:1rem;
-          font-weight:600;
-         ">
-        Record Your Shop Visit
-      </p>
-
-      <p style="
-        color:var(--text-muted);
-        font-size:0.82rem;
-        margin-top:6px;
-      ">
-        Tap below after visiting Jalan Sales
-      </p>
-
-      <a href="{{ url_for('scan') }}"
-         id="scanBtn"
-         class="btn-gold mt-3"
-         style="
-          text-decoration:none;
-          min-width:220px;
-          justify-content:center;
-         ">
-
-         🚀 Record My Visit
-
-      </a>
-
-    {% endif %}
-
-  </div>
-
-  <!-- Footer -->
-  <div class="text-center mt-4 fade-up">
-
-    <div class="glass-card p-3"
-         style="
-            background:rgba(255,255,255,0.03);
-            border:1px solid rgba(246,201,14,0.08);
-         ">
-
-        <h4 style="
-            color:var(--gold-1);
-            font-size:1rem;
-            margin-bottom:10px;
-            font-weight:700;
-        ">
-            🏢 Jalan Sales
-        </h4>
-
-        <p style="
-          font-size:0.78rem;
-          color:var(--text-muted);
-          margin-bottom:6px;
-        ">
-          📍 Todi College Road, Laxmangarh, Sikar
+        <p class="text-muted">
+            Authorized Dealer of
+            <br>
+            <strong>MP BIRLA CHETAK CEMENT</strong>
         </p>
 
-        <p style="
-          font-size:0.78rem;
-          color:var(--text-muted);
-          margin-bottom:6px;
-        ">
-          📞 8432142122 / 9414037524
+        <p class="text-muted">
+            📍 Todi College Road, Laxmangarh, Sikar
         </p>
 
-        <p style="
-          font-size:0.78rem;
-          color:var(--text-muted);
-          margin-bottom:10px;
-        ">
-          📞 9783859653 / 9660978524
+        <p class="text-muted">
+            🕒 Mon-Sun • 8:00 AM – 9:00 PM
         </p>
 
-        <hr style="
-            border-color:rgba(255,255,255,0.08);
-        ">
-
-        <p style="
-          font-size:0.72rem;
-          color:var(--text-muted);
-          margin-bottom:4px;
-        ">
-          📅 Member since {{ customer.created_at[:10] }}
-        </p>
-
-        <p style="
-          font-size:0.72rem;
-          color:var(--text-muted);
-        ">
-          👤 Registered Mobile: {{ customer.phone }}
+        <p class="text-muted">
+            📲 WhatsApp:
+            9660978524 / 9649937380
         </p>
 
     </div>
-
-  </div>
 
 </div>
-
-<!-- Reward Popup -->
-{% if reward and request.args.get('new_reward') %}
-
-<div class="reward-overlay"
-     id="rewardPopup"
-     onclick="closeRewardPopup()">
-
-  <div class="reward-popup">
-
-    <div class="confetti">
-      🎊
-    </div>
-
-    <h3 class="brand mt-3"
-        style="font-size:1.5rem">
-      Reward Unlocked!
-    </h3>
-
-    <div style="
-      margin-top:1rem;
-      font-size:2.3rem;
-    ">
-      {{ reward }}
-    </div>
-
-    <p style="
-      margin-top:1rem;
-      color:var(--text-muted);
-      font-size:0.85rem;
-    ">
-      Congratulations! 🎉
-      <br>
-      Show this reward to the staff to claim it.
-    </p>
-
-    <button onclick="closeRewardPopup()"
-            class="btn-gold mt-4">
-
-      Awesome 🙌
-
-    </button>
-
-  </div>
-
-</div>
-
-{% endif %}
 
 {% endblock %}

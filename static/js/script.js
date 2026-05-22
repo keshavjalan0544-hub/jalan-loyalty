@@ -1,6 +1,7 @@
 /**
- * Jalan Sales — FINAL PREMIUM JS
- * Ultra Smooth UI Interactions
+ * JALAN SALES — MP BIRLA CHETAK CEMENT
+ * FINAL PREMIUM JS
+ * Industrial Premium UI Interactions
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,14 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       input.value = input.value
         .replace(/\D/g, '')
-        .slice(0, 15);
+        .slice(0, 10);
 
     });
 
   });
 
   /* ─────────────────────────────────────────────
-     LOGIN FORM
+     LOGIN FORM VALIDATION
   ───────────────────────────────────────────── */
 
   const loginForm = document.getElementById('loginForm');
@@ -54,48 +55,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loginForm.addEventListener('submit', (e) => {
 
-      const name = document.getElementById('name').value.trim();
+      const name = document.getElementById('name');
+      const phone = document.getElementById('phone');
 
-      const phone = document.getElementById('phone').value.trim();
+      if (!name || !phone) return;
 
-      const btn = loginForm.querySelector('[type="submit"]');
+      const nameValue = name.value.trim();
+      const phoneValue = phone.value.trim();
 
       removeErrors();
 
-      if (!name || !phone) {
+      if (!nameValue || !phoneValue) {
 
         e.preventDefault();
 
         shake(loginForm);
 
-        if (!name) {
-          showError('name', 'Please enter your name');
+        if (!nameValue) {
+          showError(name, 'Please enter your name');
         }
 
-        if (!phone) {
-          showError('phone', 'Please enter your mobile number');
+        if (!phoneValue) {
+          showError(phone, 'Please enter mobile number');
         }
 
         return;
       }
 
-      if (!/^\d{10,15}$/.test(phone)) {
+      if (!/^\d{10}$/.test(phoneValue)) {
 
         e.preventDefault();
 
         shake(loginForm);
 
-        showError('phone', 'Enter valid mobile number');
+        showError(phone, 'Enter valid 10 digit number');
 
         return;
       }
 
-      btn.disabled = true;
+      const btn = loginForm.querySelector('button[type="submit"]');
 
-      btn.innerHTML = `
-        <span class="spinner"></span>
-        Entering...
-      `;
+      if (btn) {
+
+        btn.disabled = true;
+
+        btn.innerHTML = `
+          <span class="spinner"></span>
+          Please Wait...
+        `;
+
+      }
 
     });
 
@@ -181,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ─────────────────────────────────────────────
-     PROGRESS BAR ANIMATION
+     PROGRESS BAR
   ───────────────────────────────────────────── */
 
   const progressFill = document.getElementById('progressFill');
@@ -192,13 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
       progressFill.dataset.target || 0
     );
 
-    progressFill.style.width = '0%';
-
     setTimeout(() => {
 
       progressFill.style.width = target + '%';
 
-    }, 350);
+    }, 400);
 
   }
 
@@ -213,16 +220,10 @@ document.addEventListener('DOMContentLoaded', () => {
     launchConfetti();
 
     setTimeout(() => {
+
       closeRewardPopup();
+
     }, 7000);
-
-    rewardPopup.addEventListener('click', (e) => {
-
-      if (e.target.id === 'rewardPopup') {
-        closeRewardPopup();
-      }
-
-    });
 
   }
 
@@ -254,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ─────────────────────────────────────────────
-     RESET CONFIRMATION
+     RESET CONFIRM
   ───────────────────────────────────────────── */
 
   document.querySelectorAll('.confirm-reset')
@@ -263,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', (e) => {
 
         const confirmReset = confirm(
-          'Reset all visits & rewards for this customer?'
+          'Reset all visits and rewards?'
         );
 
         if (!confirmReset) {
@@ -284,23 +285,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     copyQrBtn.addEventListener('click', async () => {
 
-      const url = copyQrBtn.dataset.url;
-
       try {
 
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(
+          copyQrBtn.dataset.url
+        );
 
         copyQrBtn.innerHTML = '✅ Copied';
 
         setTimeout(() => {
 
-          copyQrBtn.innerHTML = '📋 Copy Scan URL';
+          copyQrBtn.innerHTML =
+            '📋 Copy Scan URL';
 
-        }, 2200);
+        }, 2000);
 
       } catch {
 
-        alert('Unable to copy URL');
+        alert('Copy failed');
 
       }
 
@@ -309,34 +311,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ─────────────────────────────────────────────
-     PARALLAX EFFECT
+     HOVER EFFECTS
   ───────────────────────────────────────────── */
 
-  document.addEventListener('mousemove', (e) => {
+  const cards = document.querySelectorAll('.glass-card');
 
-    const cards = document.querySelectorAll('.glass-card');
+  cards.forEach(card => {
 
-    const x = (window.innerWidth / 2 - e.clientX) / 35;
+    card.addEventListener('mousemove', (e) => {
 
-    const y = (window.innerHeight / 2 - e.clientY) / 35;
+      if (window.innerWidth < 768) return;
 
-    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const rotateY =
+        ((x / rect.width) - 0.5) * 8;
+
+      const rotateX =
+        ((y / rect.height) - 0.5) * -8;
 
       card.style.transform =
-        `rotateY(${x}deg) rotateX(${-y}deg)`;
+        `perspective(1000px)
+         rotateX(${rotateX}deg)
+         rotateY(${rotateY}deg)
+         translateY(-2px)`;
 
     });
 
-  });
+    card.addEventListener('mouseleave', () => {
 
-  document.addEventListener('mouseleave', () => {
+      card.style.transform =
+        'perspective(1000px) rotateX(0) rotateY(0)';
 
-    document.querySelectorAll('.glass-card')
-      .forEach(card => {
-
-        card.style.transform = 'rotateY(0deg) rotateX(0deg)';
-
-      });
+    });
 
   });
 
@@ -358,9 +368,7 @@ function shake(element) {
 
 }
 
-function showError(fieldId, message) {
-
-  const field = document.getElementById(fieldId);
+function showError(field, message) {
 
   if (!field) return;
 
@@ -382,7 +390,7 @@ function removeErrors() {
 }
 
 /* ─────────────────────────────────────────────
-   CLOSE REWARD POPUP
+   CLOSE POPUP
 ───────────────────────────────────────────── */
 
 function closeRewardPopup() {
@@ -391,37 +399,36 @@ function closeRewardPopup() {
 
   if (!popup) return;
 
-  popup.classList.add('hide');
+  popup.style.opacity = '0';
 
   setTimeout(() => {
 
     popup.remove();
 
-  }, 400);
+  }, 300);
 
 }
 
 /* ─────────────────────────────────────────────
-   MINI CONFETTI
+   CONFETTI
 ───────────────────────────────────────────── */
 
 function launchConfetti() {
 
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 40; i++) {
 
     const confetti = document.createElement('div');
 
     confetti.className = 'confetti-piece';
 
-    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.left =
+      Math.random() * 100 + 'vw';
 
     confetti.style.animationDuration =
       (Math.random() * 3 + 2) + 's';
 
-    confetti.style.opacity = Math.random();
-
-    confetti.style.transform =
-      `rotate(${Math.random() * 360}deg)`;
+    confetti.style.opacity =
+      Math.random();
 
     document.body.appendChild(confetti);
 
@@ -500,7 +507,6 @@ style.innerHTML = `
 }
 
 @keyframes fall{
-
   to{
     transform:
       translateY(110vh)
@@ -508,7 +514,6 @@ style.innerHTML = `
 
     opacity:0;
   }
-
 }
 
 `;

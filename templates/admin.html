@@ -4,6 +4,12 @@
 Admin Panel — Jalan Sales Loyalty
 {% endblock %}
 
+{% block extra_head %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
 {% block nav_actions %}
 
 <span class="nav-pill"
@@ -47,86 +53,78 @@ Admin Panel — Jalan Sales Loyalty
 
 <div class="admin-container">
 
+  <!-- ================================= -->
   <!-- HEADER -->
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 fade-up">
+  <!-- ================================= -->
 
-    <div>
+  <div class="glass-card p-4 mb-4 fade-up">
 
-      <span class="welcome-badge">
-        🏢 Jalan Sales
-      </span>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
 
-      <h2 class="brand mt-2"
-          style="
-            font-size:1.8rem;
-            margin-top:8px;
-            color:var(--gold-1);
-          ">
+      <div>
 
-        Admin Dashboard
+        <span class="welcome-badge">
+          🏢 Jalan Sales
+        </span>
 
-      </h2>
+        <h1 style="
+          margin-top:10px;
+          color:var(--gold-1);
+          font-weight:700;
+        ">
+          Cement Loyalty Dashboard
+        </h1>
 
-      <p style="
-        color:var(--text-muted);
-        font-size:0.9rem;
-        margin-top:4px;
-      ">
+        <p style="
+          color:var(--text-muted);
+          margin-top:6px;
+        ">
+          MP BIRLA CHETAK CEMENT • Industrial Loyalty System
+        </p>
 
-        Cement & Hardware Loyalty Management System
+        <p style="
+          color:var(--text-muted);
+          font-size:0.85rem;
+        ">
+          📍 Todi College Road, Laxmangarh, Sikar
+        </p>
 
-      </p>
+      </div>
 
-      <div style="
+      <div class="text-center">
+
+        <img src="{{ url_for('static', filename='img/shop_qr.png') }}"
+             style="
+                width:180px;
+                border-radius:18px;
+                box-shadow:0 10px 30px rgba(0,0,0,0.35);
+             ">
+
+        <p style="
           margin-top:10px;
           color:var(--text-muted);
           font-size:0.8rem;
-      ">
-
-        📍 Todi College Road, Laxmangarh, Sikar
-
-      </div>
-
-    </div>
-
-    <!-- QR -->
-    <div class="glass-card p-3 text-center">
-
-      <div class="qr-frame mx-auto">
-
-        <img src="{{ url_for('static', filename='img/shop_qr.png') }}"
-             alt="Shop QR"
-             style="
-              width:180px;
-              border-radius:14px;
-              box-shadow:0 10px 30px rgba(0,0,0,0.35);
-             ">
+        ">
+          📲 Customer Scan QR
+        </p>
 
       </div>
-
-      <p style="
-        font-size:0.8rem;
-        color:var(--text-muted);
-        margin-top:12px;
-      ">
-
-        📱 Scan QR At Billing Counter
-
-      </p>
 
     </div>
 
   </div>
 
+  <!-- ================================= -->
   <!-- STATS -->
+  <!-- ================================= -->
+
   <div class="row g-3 mb-4">
 
-    <!-- TOTAL -->
     <div class="col-6 col-md-3">
 
-      <div class="glass-card stat-card gold fade-up">
+      <div class="glass-card stat-card gold">
 
-        <div style="font-size:1.7rem">👥</div>
+        <div class="stat-icon">👥</div>
 
         <div class="stat-number">
           {{ stats.total or 0 }}
@@ -140,12 +138,11 @@ Admin Panel — Jalan Sales Loyalty
 
     </div>
 
-    <!-- PENDING -->
     <div class="col-6 col-md-3">
 
-      <div class="glass-card stat-card red fade-up">
+      <div class="glass-card stat-card red">
 
-        <div style="font-size:1.7rem">⏳</div>
+        <div class="stat-icon">⏳</div>
 
         <div class="stat-number">
           {{ stats.pending or 0 }}
@@ -159,12 +156,11 @@ Admin Panel — Jalan Sales Loyalty
 
     </div>
 
-    <!-- VISITS -->
     <div class="col-6 col-md-3">
 
-      <div class="glass-card stat-card green fade-up">
+      <div class="glass-card stat-card green">
 
-        <div style="font-size:1.7rem">⭐</div>
+        <div class="stat-icon">⭐</div>
 
         <div class="stat-number">
           {{ customers|sum(attribute='visits') }}
@@ -178,12 +174,11 @@ Admin Panel — Jalan Sales Loyalty
 
     </div>
 
-    <!-- REWARDS -->
     <div class="col-6 col-md-3">
 
-      <div class="glass-card stat-card fade-up">
+      <div class="glass-card stat-card">
 
-        <div style="font-size:1.7rem">🎁</div>
+        <div class="stat-icon">🎁</div>
 
         <div class="stat-number">
           {{ stats.tiffin or 0 }}
@@ -199,39 +194,200 @@ Admin Panel — Jalan Sales Loyalty
 
   </div>
 
-  <!-- TABLE -->
+  <!-- ================================= -->
+  <!-- SEARCH + FILTER -->
+  <!-- ================================= -->
+
+  <div class="glass-card p-4 mb-4 fade-up">
+
+    <form method="GET"
+          action="{{ url_for('admin') }}">
+
+      <div class="row g-3 align-items-center">
+
+        <div class="col-md-5">
+
+          <input type="text"
+                 name="q"
+                 value="{{ search }}"
+                 placeholder="Search customer or phone..."
+                 class="form-control-glass">
+
+        </div>
+
+        <div class="col-md-3">
+
+          <select name="filter"
+                  class="form-control-glass">
+
+            <option value="">
+              All Customers
+            </option>
+
+            <option value="pending">
+              Pending Only
+            </option>
+
+          </select>
+
+        </div>
+
+        <div class="col-md-2">
+
+          <select name="sort"
+                  class="form-control-glass">
+
+            <option value="latest">
+              Latest
+            </option>
+
+            <option value="visits">
+              Most Visits
+            </option>
+
+          </select>
+
+        </div>
+
+        <div class="col-md-2">
+
+          <button class="btn-gold w-100">
+
+            🔍 Search
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </form>
+
+  </div>
+
+  <!-- ================================= -->
+  <!-- ANALYTICS -->
+  <!-- ================================= -->
+
+  <div class="row g-4 mb-4">
+
+    <div class="col-lg-6">
+
+      <div class="glass-card p-4">
+
+        <h3 class="mb-3">
+          📈 Weekly Visits
+        </h3>
+
+        <canvas id="visitChart"></canvas>
+
+      </div>
+
+    </div>
+
+    <div class="col-lg-6">
+
+      <div class="glass-card p-4">
+
+        <h3 class="mb-3">
+          🎁 Reward Claims
+        </h3>
+
+        <canvas id="rewardChart"></canvas>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================================= -->
+  <!-- TOP CUSTOMERS -->
+  <!-- ================================= -->
+
+  <div class="glass-card p-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+      <h3>
+        🏆 Top Customers
+      </h3>
+
+      <span class="badge-pill badge-visits">
+        Loyalty Rankings
+      </span>
+
+    </div>
+
+    <div class="top-customers">
+
+      {% for c in customers[:5] %}
+
+      <div class="top-customer-item">
+
+        <div class="d-flex align-items-center gap-3">
+
+          <div class="top-rank">
+            #{{ loop.index }}
+          </div>
+
+          <div>
+
+            <div style="font-weight:600">
+              {{ c.name }}
+            </div>
+
+            <div style="
+              color:var(--text-muted);
+              font-size:0.75rem;
+            ">
+              {{ c.phone }}
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="badge-pill badge-visits">
+          ⭐ {{ c.visits }}
+        </div>
+
+      </div>
+
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+  <!-- ================================= -->
+  <!-- CUSTOMER TABLE -->
+  <!-- ================================= -->
+
   <div class="glass-card fade-up"
        style="overflow:hidden">
 
-    <!-- HEADER -->
     <div style="
       padding:1rem 1.2rem;
       border-bottom:1px solid var(--glass-bd);
       background:rgba(255,255,255,0.03);
     ">
 
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="d-flex justify-content-between align-items-center">
 
         <div>
 
           <h3 style="
-            font-size:1rem;
-            margin:0;
             color:var(--text-main);
           ">
-
             Customer Records
-
           </h3>
 
           <p style="
             color:var(--text-muted);
-            font-size:0.75rem;
-            margin-top:4px;
+            font-size:0.8rem;
           ">
-
-            Showing {{ customers|length }} customer{% if customers|length != 1 %}s{% endif %}
-
+            Showing {{ customers|length }} customers
           </p>
 
         </div>
@@ -246,7 +402,6 @@ Admin Panel — Jalan Sales Loyalty
 
     </div>
 
-    <!-- TABLE -->
     <div style="overflow-x:auto">
 
       <table class="admin-table">
@@ -272,61 +427,39 @@ Admin Panel — Jalan Sales Loyalty
 
           {% for c in customers %}
 
-          <tr {% if c.pending_visit %}style="background:rgba(246,201,14,0.06);" {% endif %}>
+          <tr {% if c.pending_visit %}style="background:rgba(246,201,14,0.05)"{% endif %}>
 
-            <!-- ID -->
-            <td>
+            <td>#{{ c.id }}</td>
 
-              <span style="
-                color:var(--text-muted);
-                font-size:0.8rem;
-              ">
-
-                #{{ c.id }}
-
-              </span>
-
-            </td>
-
-            <!-- CUSTOMER -->
             <td>
 
               <div class="d-flex align-items-center gap-2">
 
                 <div style="
-                  width:38px;
-                  height:38px;
+                  width:40px;
+                  height:40px;
                   border-radius:50%;
                   background:rgba(246,201,14,0.12);
                   display:flex;
                   align-items:center;
                   justify-content:center;
-                  font-weight:700;
                   color:var(--gold-1);
+                  font-weight:700;
                 ">
-
                   {{ c.name[0] }}
-
                 </div>
 
                 <div>
 
-                  <div style="
-                    font-weight:600;
-                    color:var(--text-main);
-                  ">
-
+                  <div style="font-weight:600">
                     {{ c.name }}
-
                   </div>
 
                   <div style="
                     color:var(--text-muted);
                     font-size:0.72rem;
                   ">
-
                     Loyalty Member
-
                   </div>
 
                 </div>
@@ -335,32 +468,16 @@ Admin Panel — Jalan Sales Loyalty
 
             </td>
 
-            <!-- PHONE -->
-            <td>
+            <td>{{ c.phone }}</td>
 
-              <span style="
-                color:var(--text-muted);
-                font-size:0.84rem;
-              ">
-
-                {{ c.phone }}
-
-              </span>
-
-            </td>
-
-            <!-- VISITS -->
             <td>
 
               <span class="badge-pill badge-visits">
-
-                ⭐ {{ c.visits }} Visits
-
+                ⭐ {{ c.visits }}
               </span>
 
             </td>
 
-            <!-- REWARD -->
             <td>
 
               {% set r = compute_reward(c.visits) %}
@@ -368,95 +485,67 @@ Admin Panel — Jalan Sales Loyalty
               {% if r %}
 
               <span class="badge-pill badge-reward">
-
                 🎁 {{ r }}
-
               </span>
 
               {% else %}
 
-              <span style="
-                color:var(--text-muted);
-                font-size:0.8rem;
-              ">
-
+              <span class="text-muted">
                 No Reward
-
               </span>
 
               {% endif %}
 
             </td>
 
-            <!-- STATUS -->
             <td>
 
               {% if c.pending_visit %}
 
               <span class="badge-pill badge-pending">
-
-                ⏳ Pending Approval
-
+                ⏳ Pending
               </span>
 
               {% else %}
 
               <span style="
-                color:var(--success);
-                font-size:0.8rem;
+                color:#00e676;
                 font-weight:600;
               ">
-
                 ✓ Active
-
               </span>
 
               {% endif %}
 
             </td>
 
-            <!-- DATE -->
             <td>
 
-              <span style="
-                color:var(--text-muted);
-                font-size:0.78rem;
-              ">
-
-                {{ c.created_at[:10] }}
-
-              </span>
+              {{ c.created_at[:10] }}
 
             </td>
 
-            <!-- ACTION -->
             <td>
 
               {% if c.pending_visit %}
 
-              <div class="d-flex gap-2 flex-wrap">
+              <div class="d-flex gap-2">
 
                 <a href="{{ url_for('approve', cid=c.id) }}"
-                   class="btn-glass btn-success-glass"
-                   style="
-                    padding:5px 10px;
-                    font-size:0.72rem;
-                   ">
+                   class="btn-glass btn-success-glass">
 
-                   ✅ Approve
+                   ✅
 
                 </a>
 
                 <a href="{{ url_for('reject', cid=c.id) }}"
                    class="btn-glass"
                    style="
-                    padding:5px 10px;
-                    font-size:0.72rem;
-                    background:rgba(255,0,0,0.15);
-                    color:#ff8080;
+                      background:rgba(255,0,0,0.15);
+                      color:#ff8080;
                    ">
 
-                   ❌ Reject
+                   ❌
 
                 </a>
 
@@ -464,33 +553,11 @@ Admin Panel — Jalan Sales Loyalty
 
               {% else %}
 
-              <span style="
-                color:var(--text-muted);
-                font-size:0.75rem;
-              ">
-
-                No Action
-
+              <span class="text-muted">
+                —
               </span>
 
               {% endif %}
-
-            </td>
-
-          </tr>
-
-          {% else %}
-
-          <tr>
-
-            <td colspan="8"
-                class="text-center"
-                style="
-                  padding:3rem;
-                  color:var(--text-muted);
-                ">
-
-              No customers yet.
 
             </td>
 
@@ -507,5 +574,71 @@ Admin Panel — Jalan Sales Loyalty
   </div>
 
 </div>
+
+<!-- ================================= -->
+<!-- CHART JS -->
+<!-- ================================= -->
+
+<script>
+
+const visitCtx = document
+.getElementById('visitChart');
+
+new Chart(visitCtx, {
+
+    type: 'line',
+
+    data: {
+
+        labels: [
+            'Mon',
+            'Tue',
+            'Wed',
+            'Thu',
+            'Fri',
+            'Sat',
+            'Sun'
+        ],
+
+        datasets: [{
+
+            label: 'Visits',
+
+            data: [12, 19, 8, 15, 25, 18, 30],
+
+            tension: 0.4
+
+        }]
+
+    }
+
+});
+
+const rewardCtx = document
+.getElementById('rewardChart');
+
+new Chart(rewardCtx, {
+
+    type: 'doughnut',
+
+    data: {
+
+        labels: [
+            'Bottle',
+            'Tiffin',
+            'Thali'
+        ],
+
+        datasets: [{
+
+            data: [12, 8, 4]
+
+        }]
+
+    }
+
+});
+
+</script>
 
 {% endblock %}
